@@ -13,13 +13,21 @@ workflows:
       - name: 📌 Generate Podfile if not existing
         script: |
           if [ ! -f ios/Podfile ]; then
+            echo "⚙️ Podfile missing → generating"
             flutter build ios --no-codesign
           fi
 
-      - name: ✅ Set minimum iOS version 14.0
+      - name: ✅ Force iOS14 deployment target
         script: |
-          echo "🔧 Updating Podfile to iOS 14.0"
-          sed -i '' 's/platform :ios.*/platform :ios, '\''14.0'\''/' ios/Podfile || echo "platform :ios, '14.0'" >> ios/Podfile
+          echo "🔧 Forcing platform :ios, '14.0' in Podfile"
+          if grep -q "platform :ios" ios/Podfile; then
+            sed -i '' '/platform :ios/d' ios/Podfile
+            sed -i '' "1s/^/platform :ios, '14.0'\n/" ios/Podfile
+          else
+            sed -i '' "1s/^/platform :ios, '14.0'\n/" ios/Podfile
+          fi
+          echo "✅ Final Podfile ↓"
+          cat ios/Podfile
 
       - name: 📦 Install pods
         script: |
