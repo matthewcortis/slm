@@ -5,23 +5,30 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      - name: 🧹 Clean & Get packages
+      - name: 🧹 Clean & Fetch Packages
         script: |
           flutter clean
           flutter pub get
 
-      - name: 📌 Generate Podfile if missing
+      - name: 📌 Generate Podfile if not existing
         script: |
           if [ ! -f ios/Podfile ]; then
-            echo "⚙️ No Podfile found. Running flutter build ios to generate..."
             flutter build ios --no-codesign
           fi
 
-      - name: ✅ Increase iOS Deployment Target to 14.0
+      - name: ✅ Set minimum iOS version 14.0
         script: |
-          sed -i '' 's/platform :ios.*/platform :ios, '\''14.0'\''/' ios/Podfile
+          echo "🔧 Updating Podfile to iOS 14.0"
+          sed -i '' 's/platform :ios.*/platform :ios, '\''14.0'\''/' ios/Podfile || echo "platform :ios, '14.0'" >> ios/Podfile
 
-      - name: 📦 Build iOS .ipa
+      - name: 📦 Install pods
+        script: |
+          cd ios
+          rm -rf Pods Podfile.lock
+          pod install
+          cd ..
+
+      - name: 🚀 Build IPA
         script: |
           flutter build ipa --no-codesign
 
