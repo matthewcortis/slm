@@ -1,0 +1,137 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../routes.dart';
+class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Lấy kích thước màn hình thực tế (đã trừ SafeArea)
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+    final screenWidth = size.width;
+    final screenHeight = size.height - padding.top - padding.bottom;
+
+    // Hệ số scale dựa theo Figma 430x932
+    double scaleW(double w) => w * screenWidth / 430;
+    double scaleH(double h) => h * screenHeight / 932;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            /// --- Hình SVG ---
+            Positioned(
+              top: scaleH(230),
+              left: scaleW(16),
+              right: scaleW(16),
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/icons/welcome.svg',
+                  width: scaleW(399),
+                  height: scaleH(267),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+
+            /// --- Tiêu đề ---
+            Positioned(
+              top: scaleH(665),
+              left: scaleW(16),
+              right: scaleW(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Chào mừng đến với SLM',
+                    style: TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontWeight: FontWeight.w600,
+                      fontSize: scaleW(24),
+                      color: const Color(0xFF27273E),
+                    ),
+                  ),
+                  SizedBox(height: scaleH(4)),
+                  Text(
+                    'Hãy bắt đầu tất cả mọi thứ tại đây!',
+                    style: TextStyle(
+                      fontFamily: 'SF Pro Display',
+                      fontWeight: FontWeight.w400,
+                      fontSize: scaleW(14),
+                      color: const Color(0xFF7B7D9D),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            /// --- Buttons ---
+            Positioned(
+              bottom: scaleH(32), // ✅ Thay vì dùng top cứng — giúp auto căn dưới
+              left: scaleW(16),
+              right: scaleW(16),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: scaleH(48),
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF5F5F8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(scaleW(12)),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Đăng ký',
+                        style: TextStyle(
+                          color: const Color(0xFFED1C24),
+                          fontSize: scaleW(16),
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'SF Pro Display',
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: scaleH(12)),
+                  SizedBox(
+                    width: double.infinity,
+                    height: scaleH(48),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.loginScreen,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFED1C24),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(scaleW(12)),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Đăng nhập',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: scaleW(16),
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'SF Pro Display',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
