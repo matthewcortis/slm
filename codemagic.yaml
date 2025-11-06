@@ -23,7 +23,7 @@ workflows:
 
       - name: 📦 Build iOS .ipa
         script: |
-          flutter build ipa --export-options-plist=ios/ExportOptions.plist
+          flutter build ipa --no-codesign
 
     artifacts:
-      - build/ios/**/*.ipa
+      - build/ios/ipa/*.ipa
