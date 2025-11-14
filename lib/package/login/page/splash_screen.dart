@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../routes.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -15,17 +17,34 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-
-    // Khởi tạo controller
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
     // Sau 3 giây thì chuyển màn hình
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushNamed(context, AppRoutes.loginScreenPage);
+    Future.delayed(const Duration(seconds: 2), () async {
+      final prefs = await SharedPreferences.getInstance();
+      final role = prefs.getString('role');
+
+      if (!mounted) return;
+
+      if (role == null) {
+        Navigator.pushReplacementNamed(context, AppRoutes.loginScreenPage);
+      } else {
+        switch (role) {
+          case "admin":
+            Navigator.pushReplacementNamed(context, AppRoutes.adminBottomNav);
+            break;
+          case "staff":
+            Navigator.pushReplacementNamed(context, AppRoutes.adminBottomNav);
+            break;
+          case "customer":
+            Navigator.pushReplacementNamed(context, '/bottom-nav');
+            break;
+          default:
+            Navigator.pushReplacementNamed(context, AppRoutes.loginScreenPage);
+        }
       }
     });
   }

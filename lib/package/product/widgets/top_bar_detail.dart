@@ -66,7 +66,7 @@ class ProductImagePreview extends StatelessWidget {
                   child: IconButton(
                     icon: const Icon(
                       Icons.arrow_back_ios_new_rounded,
-                      color: Colors.black87,
+                      color: Color.fromARGB(221, 255, 0, 0),
                       size: 18,
                     ),
                     onPressed: () => Navigator.pop(context),

@@ -37,7 +37,7 @@ class RelatedNewsSection extends StatelessWidget {
           // ===== Danh sách card sản phẩm =====
           SizedBox(
             width: scale(398),
-               height: scale(399),
+               height: scale(355),
             child: ListView.separated(
               clipBehavior: Clip.none,
               scrollDirection: Axis.horizontal,
@@ -48,9 +48,7 @@ class RelatedNewsSection extends StatelessWidget {
               },
             ),
           ),
-
-
-          SizedBox(height: 80,)
+          SizedBox(height: 20,)
         ],
       ),
     );

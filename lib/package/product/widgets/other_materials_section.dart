@@ -153,6 +153,7 @@ class OtherMaterialsSection extends StatelessWidget {
 
           // --- Danh sách vật tư ---
           ListView.separated(
+            padding: EdgeInsets.zero,
             shrinkWrap: true, // ✅ Tự co theo nội dung
             physics: const NeverScrollableScrollPhysics(), // ✅ Không cuộn riêng
             itemCount: materials.length,

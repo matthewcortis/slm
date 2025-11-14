@@ -218,7 +218,7 @@ class _NewsSectionCardState extends State<NewsScreen> {
                       );
                     },
                   ),
-                 
+                
                 ],
               ),
 
@@ -230,6 +230,8 @@ class _NewsSectionCardState extends State<NewsScreen> {
         ),
         
       ),
+      
     );
+    
   }
 }

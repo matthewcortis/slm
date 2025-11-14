@@ -25,7 +25,6 @@ class _ExpandingCircleScreenState extends State<ExpandingCircleScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 
-    // Bắt đầu animation
     _controller.forward();
   }
 
@@ -39,17 +38,14 @@ class _ExpandingCircleScreenState extends State<ExpandingCircleScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    // Đường kính cần đủ lớn để phủ toàn màn hình
     final maxRadius = size.height * 1.2;
 
     return Scaffold(
       body: Stack(
         alignment: Alignment.center,
         children: [
-          // Nền ban đầu (trắng hoặc ảnh)
           Container(color: Colors.white),
 
-          // Hình tròn loang ra
           AnimatedBuilder(
             animation: _animation,
             builder: (context, child) {

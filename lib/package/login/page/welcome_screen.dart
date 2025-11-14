@@ -6,13 +6,11 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy kích thước màn hình thực tế (đã trừ SafeArea)
     final size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
     final screenWidth = size.width;
     final screenHeight = size.height - padding.top - padding.bottom;
 
-    // Hệ số scale dựa theo Figma 430x932
     double scaleW(double w) => w * screenWidth / 430;
     double scaleH(double h) => h * screenHeight / 932;
 
@@ -21,7 +19,6 @@ class WelcomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            /// --- Hình SVG ---
             Positioned(
               top: scaleH(230),
               left: scaleW(16),
@@ -36,7 +33,6 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
 
-            /// --- Tiêu đề ---
             Positioned(
               top: scaleH(665),
               left: scaleW(16),
@@ -69,7 +65,7 @@ class WelcomeScreen extends StatelessWidget {
 
             /// --- Buttons ---
             Positioned(
-              bottom: scaleH(32), // ✅ Thay vì dùng top cứng — giúp auto căn dưới
+              bottom: scaleH(32), 
               left: scaleW(16),
               right: scaleW(16),
               child: Column(
@@ -103,10 +99,10 @@ class WelcomeScreen extends StatelessWidget {
                     height: scaleH(48),
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.loginScreen,
-                        );
+                        // Navigator.pushNamed(
+                        //   context,
+                        //   AppRoutes.loginWithRegisterScreen,
+                        // );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFED1C24),

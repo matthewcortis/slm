@@ -71,8 +71,8 @@ class AllProductDeviceScreen extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: scale(16)),
                   child: GridView.builder(
-                    shrinkWrap: true, // ✅ Quan trọng để không chiếm toàn bộ chiều cao
-                    physics: const NeverScrollableScrollPhysics(), // ✅ Ngăn GridView cuộn độc lập
+                    shrinkWrap: true, 
+                    physics: const NeverScrollableScrollPhysics(), 
                     clipBehavior: Clip.none, 
                     itemCount: products.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

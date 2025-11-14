@@ -17,7 +17,7 @@ class MainNavScreen extends StatefulWidget {
 }
 
 class _MainNavScreenState extends State<MainNavScreen> {
-  int _currentIndex = 1; // Mặc định mở ComboListScreen
+  int _currentIndex = 0; // Mặc định
 
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(), // Home
@@ -56,7 +56,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
             _buildNavigator(_navigatorKeys[0], const HomeScreen()),
             _buildNavigator(_navigatorKeys[1], const ComboListScreen()),
             _buildNavigator(_navigatorKeys[2], const DeviceListScreen()),
-            _buildNavigator(_navigatorKeys[3], const NewsScreen()), // 📰
+            _buildNavigator(_navigatorKeys[3], const NewsScreen()), 
             _buildNavigator(_navigatorKeys[4], const ProfileScreen()),
           ],
         ),
@@ -72,8 +72,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
     return Navigator(
       key: key,
       onGenerateRoute: (settings) {
-        // Nếu là tab News → có thể mở DetailNewsScreen
-
+  
         if (settings.name == '/detail-product-device') {
           //final product = settings.arguments as ProductDeviceModel;
           return MaterialPageRoute(builder: (_) => ProductDetailScreen());

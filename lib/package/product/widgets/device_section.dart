@@ -12,7 +12,7 @@ class DeviceSection extends StatelessWidget {
 
     return Container(
       width: scale(398),
-      height: scale(459),
+      height: scale(500),
       padding: EdgeInsets.symmetric(vertical: scale(8)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +61,7 @@ class DeviceSection extends StatelessWidget {
           // --- Danh sách card ---
           SizedBox(
             width: scale(398),
-            height: scale(399),
+            height: scale(439),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               clipBehavior: Clip.none,

@@ -87,8 +87,8 @@
       ]
     }
   ],
-  "products":[
-     {
+  "products": [
+    {
       "id": 1,
       "category_name": "Danh sách sản phẩm",
       "products": [
@@ -117,6 +117,32 @@
           "image": "assets/images/product.png"
         }
       ]
+    }
+  ],
+  "phukien": [
+    {
+      "id": 1,
+      "title": "Tủ điện NLMT SolarMax",
+      "phase": "Hệ điện: 1 pha",
+      "accessory": "Phụ kiện: AT AC 2P-63A (LS), ATS 4P-63A (Aisikai)",
+      "image": "assets/images/product.png",
+      "quantity": 1
+    },
+    {
+      "id": 2,
+      "title": "Tủ điện NLMT GoodWe",
+      "phase": "Hệ điện: 3 pha",
+      "accessory": "Phụ kiện: CB 3P-63A (LS), ATS 4P-80A (Aisikai)",
+      "image": "assets/images/product.png",
+      "quantity": 2
+    },
+    {
+      "id": 3,
+      "title": "Tủ điện NLMT Huawei",
+      "phase": "Hệ điện: 1 pha",
+      "accessory": "Phụ kiện: AT AC 2P-50A (LS), ATS 4P-63A (Panasonic)",
+      "image": "assets/images/product.png",
+      "quantity": 1
     }
   ]
 }

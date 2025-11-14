@@ -91,7 +91,7 @@ class SolarArticleHeader extends StatelessWidget {
                       child: Icon(
                         Icons.arrow_back_ios_new,
                         size: 20,
-                        color: Color(0xFF4F4F4F),
+                        color: Color.fromARGB(255, 255, 0, 0),
                       ),
                     ),
                   ),
@@ -216,7 +216,7 @@ class SolarArticleHeader extends StatelessWidget {
                       height: 18, // Tương đương với size: 18
                       colorFilter: const ColorFilter.mode(
                         // Sử dụng colorFilter để đặt màu cho SVG
-                        Color(0xFF4F4F4F),
+                        Color.fromARGB(255, 255, 0, 0),
                         BlendMode.srcIn,
                       ),
                     ),

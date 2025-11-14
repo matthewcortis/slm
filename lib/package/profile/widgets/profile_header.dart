@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:solarmaxapp/routes.dart';
+import 'package:solarmaxapp/routes.dart';
+
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
 
@@ -127,11 +131,31 @@ class ProfileSettingsSection extends StatelessWidget {
           color: bgColor ?? Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: const [
-            BoxShadow(color: Color(0x26D1D1D1), blurRadius: 34, offset: Offset(0, 15)),
-            BoxShadow(color: Color(0x21D1D1D1), blurRadius: 61, offset: Offset(0, 61)),
-            BoxShadow(color: Color(0x14D1D1D1), blurRadius: 82, offset: Offset(0, 137)),
-            BoxShadow(color: Color(0x0DD1D1D1), blurRadius: 98, offset: Offset(0, 244)),
-            BoxShadow(color: Color(0x00D1D1D1), blurRadius: 107, offset: Offset(0, 382)),
+            BoxShadow(
+              color: Color(0x26D1D1D1),
+              blurRadius: 34,
+              offset: Offset(0, 15),
+            ),
+            BoxShadow(
+              color: Color(0x21D1D1D1),
+              blurRadius: 61,
+              offset: Offset(0, 61),
+            ),
+            BoxShadow(
+              color: Color(0x14D1D1D1),
+              blurRadius: 82,
+              offset: Offset(0, 137),
+            ),
+            BoxShadow(
+              color: Color(0x0DD1D1D1),
+              blurRadius: 98,
+              offset: Offset(0, 244),
+            ),
+            BoxShadow(
+              color: Color(0x00D1D1D1),
+              blurRadius: 107,
+              offset: Offset(0, 382),
+            ),
           ],
         ),
         child: Row(
@@ -213,33 +237,64 @@ class ProfileSettingsSection extends StatelessWidget {
           // --- Nhóm Tài khoản ---
           buildTitle('Tài khoản'),
           SizedBox(height: scale(12)),
-          buildButton(label: 'Thông tin cá nhân', svgPath: 'assets/icons/user-square.svg'),
+          buildButton(
+            label: 'Thông tin cá nhân',
+            svgPath: 'assets/icons/user-square.svg',
+          ),
 
           SizedBox(height: scale(18)),
 
           // --- Nhóm Cài đặt ---
           buildTitle('Cài đặt'),
           SizedBox(height: scale(12)),
-          buildButton(label: 'Mật khẩu', svgPath: 'assets/icons/square-password.svg'),
+          buildButton(
+            label: 'Mật khẩu',
+            svgPath: 'assets/icons/square-password.svg',
+          ),
           SizedBox(height: scale(12)),
-          buildButton(label: 'Thông báo', svgPath: 'assets/icons/file-validation.svg'),
+          buildButton(
+            label: 'Thông báo',
+            svgPath: 'assets/icons/file-validation.svg',
+          ),
 
           SizedBox(height: scale(18)),
 
           // --- Nhóm Thông tin ứng dụng ---
           buildTitle('Thông tin ứng dụng'),
           SizedBox(height: scale(12)),
-          buildButton(label: 'Phiên bản ứng dụng', svgPath: 'assets/icons/user-square.svg'),
+          buildButton(
+            label: 'Phiên bản ứng dụng',
+            svgPath: 'assets/icons/user-square.svg',
+          ),
           SizedBox(height: scale(12)),
-          buildButton(label: 'Điều khoản ứng dụng', svgPath: 'assets/icons/license-maintenance.svg'),
+          buildButton(
+            label: 'Điều khoản ứng dụng',
+            svgPath: 'assets/icons/license-maintenance.svg',
+          ),
           SizedBox(height: scale(12)),
-          buildButton(label: 'Liên hệ hỗ trợ', svgPath: 'assets/icons/information-circle.svg'),
+          buildButton(
+            label: 'Liên hệ hỗ trợ',
+            svgPath: 'assets/icons/information-circle.svg',
+          ),
 
           SizedBox(height: scale(18)),
 
           // --- Nút Đăng xuất ---
           GestureDetector(
-            onTap: () {},
+            onTap: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear(); 
+
+              if (!context.mounted) return;
+
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).pushNamedAndRemoveUntil(
+                AppRoutes.splashScreen,
+                (route) => false,
+              );
+            },
             child: Container(
               width: scale(402),
               height: scale(48),
@@ -247,11 +302,31 @@ class ProfileSettingsSection extends StatelessWidget {
                 color: const Color(0xFFE6E6E6),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: const [
-                  BoxShadow(color: Color(0x26D1D1D1), blurRadius: 34, offset: Offset(0, 15)),
-                  BoxShadow(color: Color(0x21D1D1D1), blurRadius: 61, offset: Offset(0, 61)),
-                  BoxShadow(color: Color(0x14D1D1D1), blurRadius: 82, offset: Offset(0, 137)),
-                  BoxShadow(color: Color(0x0DD1D1D1), blurRadius: 98, offset: Offset(0, 244)),
-                  BoxShadow(color: Color(0x00D1D1D1), blurRadius: 107, offset: Offset(0, 382)),
+                  BoxShadow(
+                    color: Color(0x26D1D1D1),
+                    blurRadius: 34,
+                    offset: Offset(0, 15),
+                  ),
+                  BoxShadow(
+                    color: Color(0x21D1D1D1),
+                    blurRadius: 61,
+                    offset: Offset(0, 61),
+                  ),
+                  BoxShadow(
+                    color: Color(0x14D1D1D1),
+                    blurRadius: 82,
+                    offset: Offset(0, 137),
+                  ),
+                  BoxShadow(
+                    color: Color(0x0DD1D1D1),
+                    blurRadius: 98,
+                    offset: Offset(0, 244),
+                  ),
+                  BoxShadow(
+                    color: Color(0x00D1D1D1),
+                    blurRadius: 107,
+                    offset: Offset(0, 382),
+                  ),
                 ],
               ),
               child: Row(
@@ -281,8 +356,7 @@ class ProfileSettingsSection extends StatelessWidget {
               ),
             ),
           ),
-
-          SizedBox(height: scale(40)),
+          SizedBox(height: scale(20)),
         ],
       ),
     );

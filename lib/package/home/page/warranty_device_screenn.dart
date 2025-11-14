@@ -57,7 +57,7 @@ class WarrantyDeviceScreen extends StatelessWidget {
                     child: IconButton(
                       icon: const Icon(
                         Icons.arrow_back_ios_new_rounded,
-                        color: Colors.black87,
+                        color: Color.fromARGB(221, 255, 0, 0),
                         size: 18,
                       ),
                       onPressed: () => Navigator.pop(context),
@@ -78,7 +78,7 @@ class WarrantyDeviceScreen extends StatelessWidget {
                 "Thiết bị bảo hành",
                 style: TextStyle(
                   fontFamily: 'SFProDisplay',
-                  fontWeight: FontWeight.w600, // tương đương 590
+                  fontWeight: FontWeight.w600, 
                   fontSize: scale(20),
                   height: 25 / 20,
                   color: const Color(0xFF4F4F4F),
@@ -95,7 +95,7 @@ class WarrantyDeviceScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: scale(16)),
                 child: Column(
                   children: [
-                    /// ------- Card Giá trị hợp đồng -------
+                     SizedBox(height: scale(20)),
                     ContractValueCard(
                       deliveryDate: "12/03/2025",
                       totalValue: "12.650.000 đ",
@@ -103,17 +103,14 @@ class WarrantyDeviceScreen extends StatelessWidget {
                         print("Xem chi tiết hợp đồng");
                       },
                     ),
-
                     SizedBox(height: scale(20)),
-
                     WarrantyWidget(),
                     SizedBox(height: scale(20)),
                     WarrantyContractCard(),
-                     SizedBox(height: scale(20)),
-                     DetailInfoCard(),
-                     SizedBox(height: scale(20)),
+                    SizedBox(height: scale(20)),
+                    DetailInfoCard(),
+                    SizedBox(height: scale(20)),
 
-                    /// (Bạn có thể thêm danh sách thiết bị bên dưới)
                   ],
                 ),
               ),

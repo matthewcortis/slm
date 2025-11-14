@@ -29,10 +29,10 @@ class WarrantyItemCard extends StatelessWidget {
     return Container(
       width: scale(402),
       padding: EdgeInsets.fromLTRB(
-        scale(16), // Left (Trái)
-        scale(8), // Top (Trên)
-        scale(16), // Right (Phải)
-        scale(8), // Bottom (Dưới)
+        scale(16), 
+        scale(8), 
+        scale(16),
+        scale(8), 
       ),
       decoration: BoxDecoration(
         color: const Color(0x33B5B5B5),

@@ -8,8 +8,6 @@ class ProductDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     double scale(double v) => v * width / 430;
-
-    /// --- Danh sách thông số ---
     final List<SpecItem> specs = [
       SpecItem("1. Công nghệ:", "N-type Double Glass Bifacial Modules"),
       SpecItem("2. Thương hiệu:", "JA Solar"),
@@ -56,7 +54,7 @@ class ProductDetailScreen extends StatelessWidget {
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.arrow_back_ios_new,
-                                size: 20, color: Colors.black87),
+                                size: 20, color: Color.fromARGB(221, 255, 0, 0)),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ),
@@ -188,7 +186,7 @@ class ProductDetailScreen extends StatelessWidget {
             ),
           ),
 
-          /// ✅ Thêm phần "Thông tin chi tiết"
+          /// "Thông tin chi tiết"
           SliverToBoxAdapter(
             child: ProductSpecsSection(specs: specs),
           ),

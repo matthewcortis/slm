@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/load_data.dart';
-import '../../model/device_model.dart'; // chứa hàm loadCategoryById()
+import '../../model/device_model.dart';
 import '../widgets/device_widgets.dart';
-import '../page/all_device_screen.dart'; // ⚡ chỉ thêm dòng này để hiển thị chi tiết
+import '../page/all_device_screen.dart';
 import '../model/product_device_model.dart';
 class DeviceListScreen extends StatefulWidget {
   const DeviceListScreen({super.key});
@@ -28,7 +28,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     futureCategory3 = loadCategoryById(3);
   }
 
-  // 👉 Hàm mở chi tiết (thay Navigator.push)
+
   void _openAllProducts(String title, List<ProductDeviceModel> products) {
     setState(() {
       _showAllProducts = true;
@@ -37,7 +37,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     });
   }
 
-  // 👉 Hàm quay lại danh mục
   void _goBack() {
     setState(() {
       _showAllProducts = false;
@@ -51,7 +50,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     final width = MediaQuery.of(context).size.width;
     double scale(double v) => v * width / 430;
 
-    // ✅ Nếu đang xem chi tiết
+   
     if (_showAllProducts) {
       return AllProductDeviceScreen(
         title: _currentTitle,
@@ -60,7 +59,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
       );
     }
 
-    // ✅ Mặc định hiển thị danh sách thiết bị
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
       body: SafeArea(
@@ -93,7 +92,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                     }
                     return DeviceWidgetSection(
                       category: snapshot.data!,
-                      onShowAll: _openAllProducts, // ✅ thêm callback
+                      onShowAll: _openAllProducts,
                     );
                   },
                 ),

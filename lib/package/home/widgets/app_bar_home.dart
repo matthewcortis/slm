@@ -71,26 +71,26 @@ class SolarHeaderFullCard extends StatelessWidget {
                                 'Khuất Duy Quang',
                                 style: TextStyle(
                                   fontFamily:
-                                      'SF Pro', // hoặc 'SF Pro Display' nếu bạn đã add font
+                                      'SF Pro', 
                                   fontWeight: FontWeight
-                                      .w600, // tương đương Semibold ~ 590
+                                      .w600, 
                                   fontStyle: FontStyle.normal,
                                   fontSize: scale(14),
-                                  height: 20 / 14, // line-height: 20px
+                                  height: 20 / 14, 
                                   letterSpacing: 0,
                                   color: const Color(
                                     0xFF4F4F4F,
-                                  ), // var(--Color-Gray-700)
+                                  ), 
                                 ),
                               ),
                               Text(
                                 'Khách hàng',
                                 style: TextStyle(
                                   fontFamily: 'SF Pro',
-                                  fontWeight: FontWeight.w400, // Regular
+                                  fontWeight: FontWeight.w400, 
                                   fontStyle: FontStyle.normal,
                                   fontSize: scale(12),
-                                  height: 18 / 12, // line-height: 18px
+                                  height: 18 / 12,
                                   letterSpacing: 0,
                                   color: const Color(0xFF4F4F4F),
                                 ),
@@ -128,7 +128,7 @@ class SolarHeaderFullCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Bên trong Stack (ví dụ Positioned ở phần bottom)
+                
                 Container(
                   width: scale(84),
                   height: scale(28),
@@ -147,12 +147,12 @@ class SolarHeaderFullCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(
                             0.25,
-                          ), // glass trong suốt
+                          ), 
                           borderRadius: BorderRadius.circular(1000),
                           border: Border.all(
                             color: Colors.white.withOpacity(
                               0.4,
-                            ), // viền nhẹ kiểu iOS
+                            ), 
                             width: 1,
                           ),
                         ),
@@ -177,13 +177,13 @@ class SolarHeaderFullCard extends StatelessWidget {
                   'Bán hàng thật dễ dàng',
                   style: TextStyle(
                     fontFamily:
-                        'SF Pro', // hoặc 'SF Pro Display' nếu bạn đã add font
-                    fontWeight: FontWeight.w600, // tương đương Semibold (~590)
+                        'SF Pro',
+                    fontWeight: FontWeight.w600,
                     fontStyle: FontStyle.normal,
-                    fontSize: scale(24), // Figma: 24px
-                    height: 36 / 24, // line-height: 36px
-                    letterSpacing: 0, // letter-spacing: 0px
-                    color: Colors.white, // background: #FFFFFF (text màu trắng)
+                    fontSize: scale(24), 
+                    height: 36 / 24,
+                    letterSpacing: 0, 
+                    color: Colors.white, 
                   ),
                 ),
 
@@ -196,27 +196,27 @@ class SolarHeaderFullCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0x26D1D1D1), // #D1D1D126
+                        color: const Color(0x26D1D1D1), 
                         blurRadius: 34,
                         offset: const Offset(0, 15),
                       ),
                       BoxShadow(
-                        color: const Color(0x21D1D1D1), // #D1D1D121
+                        color: const Color(0x21D1D1D1), 
                         blurRadius: 61,
                         offset: const Offset(0, 61),
                       ),
                       BoxShadow(
-                        color: const Color(0x14D1D1D1), // #D1D1D114
+                        color: const Color(0x14D1D1D1), 
                         blurRadius: 82,
                         offset: const Offset(0, 137),
                       ),
                       BoxShadow(
-                        color: const Color(0x0FD1D1D1), // #D1D1D105
+                        color: const Color(0x0FD1D1D1), 
                         blurRadius: 98,
                         offset: const Offset(0, 244),
                       ),
                       BoxShadow(
-                        color: const Color(0x00D1D1D1), // #D1D1D100
+                        color: const Color(0x00D1D1D1),
                         blurRadius: 107,
                         offset: const Offset(0, 382),
                       ),
@@ -263,109 +263,134 @@ class SolarHeaderFullCard extends StatelessWidget {
   }
 }
 
-class ContractValueCard extends StatelessWidget {
-  const ContractValueCard({super.key});
+// class ContractValueCard extends StatelessWidget {
+//   const ContractValueCard({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    double scale(double v) => v * width / 430;
+//   @override
+//   Widget build(BuildContext context) {
+//     final width = MediaQuery.of(context).size.width;
+//     double scale(double v) => v * width / 430;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(
-          context,
-          rootNavigator: false,
-        ).pushNamed('/warranty');
-      },
+//     return GestureDetector(
+//       onTap: () {
+//         Navigator.of(
+//           context,
+//           rootNavigator: false,
+//         ).pushNamed('/warranty');
+//       },
 
-      child: Center(
-        child: Container(
-          width: scale(398),
-          height: scale(93),
-          padding: EdgeInsets.all(scale(16)),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFF3F3F3), width: 1),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x1F000000), // #0000001F
-                blurRadius: 20,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // LEFT SIDE
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Capsule "Ngày bàn giao"
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: scale(8),
-                      vertical: scale(4),
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0x33E6E6E6), // #E6E6E633
-                      borderRadius: BorderRadius.circular(100),
-                      border: Border.all(color: const Color(0xFFF3F3F3)),
-                    ),
-                    child: Text(
-                      'Ngày bàn giao: 12/03/2025',
-                      style: TextStyle(
-                        fontFamily: 'SFProDisplay',
-                        fontWeight: FontWeight.w400,
-                        fontSize: scale(10),
-                        height: 18 / 12,
-                        color: const Color(0xFF4F4F4F),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: scale(8)),
-                  // Label “Tổng giá trị hợp đồng”
-                  Text(
-                    'Tổng giá trị hợp đồng',
-                    style: TextStyle(
-                      fontFamily: 'SFProDisplay',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      height: 20 / 14,
-                      color: const Color(0xFF4F4F4F),
-                    ),
-                  ),
-                ],
-              ),
+//       child: Center(
+//         child: Container(
+//           width: scale(398),
+//           height: scale(93),
+//           padding: EdgeInsets.all(scale(16)),
+//           decoration: BoxDecoration(
+//             color: Colors.white,
+//             borderRadius: BorderRadius.circular(20),
+//             border: Border.all(color: const Color(0xFFF3F3F3), width: 1),
+//             boxShadow: const [
+//               BoxShadow(
+//                 color: Color(0x1F000000), // #0000001F
+//                 blurRadius: 20,
+//                 offset: Offset(0, 2),
+//               ),
+//             ],
+//           ),
+//           child: Row(
+//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//             crossAxisAlignment: CrossAxisAlignment.center,
+//             children: [
+//               // LEFT SIDE
+//               Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   // Capsule "Ngày bàn giao"
+//                   Container(
+//                     padding: EdgeInsets.symmetric(
+//                       horizontal: scale(8),
+//                       vertical: scale(4),
+//                     ),
+//                     decoration: BoxDecoration(
+//                       color: const Color(0x33E6E6E6), // #E6E6E633
+//                       borderRadius: BorderRadius.circular(100),
+//                       border: Border.all(color: const Color(0xFFF3F3F3)),
+//                     ),
+//                     child: Text(
+//                       'Ngày bàn giao: 12/03/2025',
+//                       style: TextStyle(
+//                         fontFamily: 'SFProDisplay',
+//                         fontWeight: FontWeight.w400,
+//                         fontSize: scale(10),
+//                         height: 18 / 12,
+//                         color: const Color(0xFF4F4F4F),
+//                       ),
+//                     ),
+//                   ),
+//                   SizedBox(height: scale(8)),
+//                   // Label “Tổng giá trị hợp đồng”
+//                   Text(
+//                     'Tổng giá trị hợp đồng',
+//                     style: TextStyle(
+//                       fontFamily: 'SFProDisplay',
+//                       fontWeight: FontWeight.w400,
+//                       fontSize: 14,
+//                       height: 20 / 14,
+//                       color: const Color(0xFF4F4F4F),
+//                     ),
+//                   ),
+//                 ],
+//               ),
 
-              // RIGHT SIDE
-              Row(
-                children: [
-                  Text(
-                    '12.650.000',
-                    style: TextStyle(
-                      fontFamily: 'SFProDisplay',
-                      fontWeight: FontWeight.w600, // Semibold ~ 590
-                      fontSize: scale(24),
-                      height: 30 / 24,
-                      color: const Color(0xFFEE4037), // đỏ thương hiệu
-                    ),
-                  ),
-                  SizedBox(width: scale(6)),
-                  const Icon(
-                    Icons.visibility_outlined,
-                    size: 20,
-                    color: Color(0xFF7B7B7B),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+//               // RIGHT SIDE
+//               PriceToggle(),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+// class PriceToggle extends StatefulWidget {
+//   const PriceToggle({super.key});
+
+//   @override
+//   State<PriceToggle> createState() => _PriceToggleState();
+// }
+
+// class _PriceToggleState extends State<PriceToggle> {
+//   bool isHidden = false;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final width = MediaQuery.of(context).size.width;
+//     double scale(double v) => v * width / 430;
+
+//     return Row(
+//       children: [
+//         Text(
+//           isHidden ? '••••••••' : '12.650.000',
+//           style: TextStyle(
+//             fontFamily: 'SFProDisplay',
+//             fontWeight: FontWeight.w600,
+//             fontSize: scale(24),
+//             height: 30 / 24,
+//             color: const Color(0xFFEE4037),
+//           ),
+//         ),
+//         SizedBox(width: scale(6)),
+//         GestureDetector(
+//           onTap: () {
+//             setState(() => isHidden = !isHidden);
+//           },
+//           child: Icon(
+//             isHidden
+//                 ? Icons.visibility_off_outlined
+//                 : Icons.visibility_outlined,
+//             size: 20,
+//             color: const Color(0xFF7B7B7B),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }

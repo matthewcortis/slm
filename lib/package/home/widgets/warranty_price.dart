@@ -1,10 +1,9 @@
-import 'dart:ui';
-import 'package:flutter/material.dart';
 
-class ContractValueCard extends StatelessWidget {
-  final String deliveryDate;   // Ngày bàn giao
-  final String totalValue;     // Tổng giá trị hợp đồng
-  final VoidCallback? onView;  // Nhấn nút xem chi tiết (nếu cần)
+import 'package:flutter/material.dart';
+class ContractValueCard extends StatefulWidget {
+  final String deliveryDate;
+  final String totalValue;
+  final VoidCallback? onView;
 
   const ContractValueCard({
     super.key,
@@ -12,6 +11,13 @@ class ContractValueCard extends StatelessWidget {
     required this.totalValue,
     this.onView,
   });
+
+  @override
+  State<ContractValueCard> createState() => _ContractValueCardState();
+}
+
+class _ContractValueCardState extends State<ContractValueCard> {
+  bool isHidden = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +35,7 @@ class ContractValueCard extends StatelessWidget {
           border: Border.all(color: const Color(0xFFF3F3F3), width: 1),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x1F000000), // #0000001F
+              color: Color(0x1F000000),
               blurRadius: 20,
               offset: Offset(0, 2),
             ),
@@ -39,7 +45,6 @@ class ContractValueCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            /// LEFT
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -54,7 +59,7 @@ class ContractValueCard extends StatelessWidget {
                     border: Border.all(color: const Color(0xFFF3F3F3)),
                   ),
                   child: Text(
-                    'Ngày bàn giao: $deliveryDate',
+                    'Ngày bàn giao: ${widget.deliveryDate}',
                     style: TextStyle(
                       fontFamily: 'SFProDisplay',
                       fontWeight: FontWeight.w400,
@@ -78,13 +83,12 @@ class ContractValueCard extends StatelessWidget {
               ],
             ),
 
-            /// RIGHT
-            GestureDetector(
-              onTap: onView,
-              child: Row(
-                children: [
-                  Text(
-                    totalValue, // <-- DYNAMIC
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: widget.onView,
+                  child: Text(
+                    isHidden ? '••••••••' : widget.totalValue,
                     style: TextStyle(
                       fontFamily: 'SFProDisplay',
                       fontWeight: FontWeight.w600,
@@ -93,14 +97,21 @@ class ContractValueCard extends StatelessWidget {
                       color: const Color(0xFFEE4037),
                     ),
                   ),
-                  SizedBox(width: scale(6)),
-                  const Icon(
-                    Icons.visibility_outlined,
+                ),
+
+                SizedBox(width: scale(6)),
+
+                GestureDetector(
+                  onTap: () => setState(() => isHidden = !isHidden),
+                  child: Icon(
+                    isHidden
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                     size: 20,
-                    color: Color(0xFF7B7B7B),
+                    color: const Color(0xFF7B7B7B),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),

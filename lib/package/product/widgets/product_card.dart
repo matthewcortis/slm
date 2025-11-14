@@ -1,33 +1,26 @@
 import 'package:flutter/material.dart';
-import '../../model/ProductModel.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../model/ProductModel.dart';
 
-/// card home
+/// Card sản phẩm (hiển thị ở trang Home)
 class ProductItemCard extends StatelessWidget {
   final ProductHotModel product;
   const ProductItemCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    double scale(double v) => v * width / 430;
-
     return GestureDetector(
       onTap: () {
-        Navigator.of(
-          context,
-          rootNavigator: false,
-        ).pushNamed('/detail-product');
+        Navigator.of(context).pushNamed('/detail-product');
       },
-
       child: Container(
-        width: scale(188),
-        height: scale(389),
-
-        padding: EdgeInsets.all(scale(12)),
+        width: 202.w,
+      
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(28.r),
           boxShadow: const [
             BoxShadow(
               color: Color(0x26D1D1D1),
@@ -52,17 +45,20 @@ class ProductItemCard extends StatelessWidget {
             // --- IMAGE + TYPE TAG ---
             Stack(
               children: [
-                Image.asset(
-                  product.image,
-                  width: 167,
-                  height: 167,
-                  fit: BoxFit.cover,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20.r),
+                  child: Image.asset(
+                    product.image,
+                    width: 167.w,
+                    height: 167.w,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 Container(
-                  width: 167,
-                  height: 157,
+                  width: 167.w,
+                  height: 157.w,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20.r),
                     gradient: const RadialGradient(
                       center: Alignment.center,
                       radius: 0.75,
@@ -74,23 +70,23 @@ class ProductItemCard extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  top: scale(12),
-                  left: scale(12),
+                  top: 12.h,
+                  left: 12.w,
                   child: Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: scale(8),
-                      vertical: scale(4),
+                      horizontal: 8.w,
+                      vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F3F3).withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(100),
+                      borderRadius: BorderRadius.circular(100.r),
                     ),
                     child: Text(
                       product.type,
                       style: TextStyle(
                         fontFamily: 'SFProDisplay',
                         fontWeight: FontWeight.w500,
-                        fontSize: scale(10),
+                        fontSize: 10.sp,
                         color: const Color(0xFF4F4F4F),
                       ),
                     ),
@@ -99,64 +95,73 @@ class ProductItemCard extends StatelessWidget {
               ],
             ),
 
-            SizedBox(height: scale(12)),
+            SizedBox(height: 12.h),
 
             // --- TEXT CONTENT ---
             SizedBox(
-              width: scale(167),
+              width: 167.w,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: 'SFProDisplay',
                       fontWeight: FontWeight.w500,
-                      fontSize: scale(14),
+                      fontSize: 14.sp,
                       height: 20 / 14,
                       color: const Color(0xFF4F4F4F),
                     ),
                   ),
-                  SizedBox(height: scale(4)),
+                  SizedBox(height: 8.h),
                   Text(
                     product.price,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: 'SFProDisplay',
                       fontWeight: FontWeight.w600,
-                      fontSize: scale(16),
+                      fontSize: 16.sp,
                       height: 24 / 16,
                       color: const Color(0xFFEE4037),
                     ),
                   ),
-                  SizedBox(height: scale(4)),
+                  SizedBox(height: 8.h),
                   Container(
-                    width: scale(161),
-                    height: scale(26),
+                    width: 161.w,
+                    height: 26.h,
                     padding: EdgeInsets.symmetric(
-                      horizontal: scale(8),
-                      vertical: scale(4),
+                      horizontal: 8.w,
+                      vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F3F3),
-                      borderRadius: BorderRadius.circular(100),
+                      borderRadius: BorderRadius.circular(100.r),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         SvgPicture.asset(
                           'assets/icons/new-releases.svg',
-                          width: scale(18),
-                          height: scale(18),
+                          width: 18.w,
+                          height: 18.w,
                         ),
-                        SizedBox(width: scale(4)),
-                        Text(
-                          product.saving,
-                          style: TextStyle(
-                            fontFamily: 'SF Pro',
-                            fontWeight: FontWeight.w400,
-                            fontSize: scale(8),
-                            height: 12 / 9,
-                            color: const Color(0xFF4F4F4F),
+                        SizedBox(width: 4.w),
+
+                        // 💡 BỌC TEXT BẰNG EXPANDED
+                        Expanded(
+                          child: Text(
+                            product.saving,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'SF Pro',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 9.sp,
+                              height: 12 / 9,
+                              color: const Color(0xFF4F4F4F),
+                            ),
                           ),
                         ),
                       ],
@@ -165,15 +170,16 @@ class ProductItemCard extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: scale(12)),
+
+            SizedBox(height: 16.h),
 
             // --- BUTTON ---
             Container(
-              width: 167,
-              height: 40,
+              width: 167.w,
+              height: 40.h,
               decoration: BoxDecoration(
-                color: const Color(0xFFE6E6E6), // Nền xám (Gray-G2)
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFE6E6E6),
+                borderRadius: BorderRadius.circular(12.r),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x26D1D1D1),
@@ -206,21 +212,21 @@ class ProductItemCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Xem chi tiết',
                       style: TextStyle(
                         fontFamily: 'SF Pro',
-                        fontWeight: FontWeight.w500, // Medium (≈510)
-                        fontSize: 16,
-                        height: 24 / 16, // line-height: 24px
-                        color: Color(0xFFEE4037), // Đỏ thương hiệu
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16.sp,
+                        height: 24 / 16,
+                        color: const Color(0xFFEE4037),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     SvgPicture.asset(
                       'assets/icons/circle-arrow-right-02-round.svg',
-                      width: 20,
-                      height: 20,
+                      width: 20.w,
+                      height: 20.w,
                       colorFilter: const ColorFilter.mode(
                         Color(0xFFEE4037),
                         BlendMode.srcIn,

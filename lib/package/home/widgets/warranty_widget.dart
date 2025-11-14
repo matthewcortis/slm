@@ -51,7 +51,7 @@ class _WarrantyWidgetState extends State<WarrantyWidget> {
               color: const Color(0xFF4F4F4F),
             ),
           ),
-          SizedBox(height: scale(8)),
+          SizedBox(height: scale(12)),
           /// DATA LIST
           FutureBuilder<List<WarrantyItemModel>>(
             future: futureItems,
@@ -70,8 +70,9 @@ class _WarrantyWidgetState extends State<WarrantyWidget> {
 
               final items = snapshot.data!;
               return ListView.separated(
-                shrinkWrap: true,       /// ✅ Cho phép ListView nằm trong ScrollView
-                physics: NeverScrollableScrollPhysics(), /// ✅ Không cuộn bên trong
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,  
+                physics: NeverScrollableScrollPhysics(), 
                 itemCount: items.length,
                 separatorBuilder: (_, __) => SizedBox(height: scale(12)),
                 itemBuilder: (context, index) {

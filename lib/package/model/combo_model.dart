@@ -29,3 +29,17 @@ class ComboModel {
     );
   }
 }
+
+class ComboData {
+  final List<ComboModel> combos;
+
+  ComboData({required this.combos});
+
+  factory ComboData.fromJson(Map<String, dynamic> json) {
+    return ComboData(
+      combos: (json['combos'] as List)
+          .map((comboJson) => ComboModel.fromJson(comboJson))
+          .toList(),
+    );
+  }
+}

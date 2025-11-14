@@ -19,10 +19,10 @@ class WarrantyContractCard extends StatelessWidget {
             width: scale(402),
             padding: EdgeInsets.all(scale(16)),
             decoration: BoxDecoration(
-              color: const Color(0x33F3F3F3), // #F3F3F333
+              color: const Color(0x33F3F3F3), 
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFFE0E0E0), // xám nhạt đẹp
+                color: const Color(0xFFE0E0E0), 
                 width: 0.5,
               ),
             ),
@@ -64,7 +64,7 @@ class WarrantyContractCard extends StatelessWidget {
                   title: "Ngày ký",
                   value: "19/03/2025",
                   scale: scale,
-                  hasBorder: false, // dòng cuối không gạch
+                  hasBorder: false, 
                 ),
               ],
             ),
@@ -126,7 +126,7 @@ class WarrantyContractCard extends StatelessWidget {
                   ),
                 ),
 
-                /// Icon Copy nếu có
+              
                 if (isCopy)
                   Padding(
                     padding: EdgeInsets.only(left: scale(6)),
@@ -162,10 +162,10 @@ class DetailInfoCard extends StatelessWidget {
             width: scale(402),
             padding: EdgeInsets.all(scale(16)),
             decoration: BoxDecoration(
-              color: const Color(0x33F3F3F3), // #F3F3F333 glass
+              color: const Color(0x33F3F3F3),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFFE0E0E0), // xám nhạt đẹp
+                color: const Color(0xFFE0E0E0), 
                 width: 0.5,
               ),
             ),

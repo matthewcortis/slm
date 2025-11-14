@@ -10,17 +10,14 @@ class ComboListScreen extends StatefulWidget {
   @override
   State<ComboListScreen> createState() => _ComboListScreenState();
 }
-
 class _ComboListScreenState extends State<ComboListScreen> {
   List<dynamic> combos = [];
-  Map<String, dynamic>? selectedCombo; // ✅ combo được chọn
+  Map<String, dynamic>? selectedCombo;
 
   Future<void> loadCombos() async {
     final jsonString = await rootBundle.loadString('assets/data/combos.json');
     final data = json.decode(jsonString);
-    setState(() {
-      combos = data['combos'];
-    });
+    setState(() => combos = data['combos']);
   }
 
   @override
@@ -29,12 +26,26 @@ class _ComboListScreenState extends State<ComboListScreen> {
     loadCombos();
   }
 
+  bool _hasProducts(Map<String, dynamic> combo) {
+    final products = combo['products'];
+    return products is List && products.isNotEmpty;
+  }
+
+  void _handleTap(Map<String, dynamic> combo) {
+    if (_hasProducts(combo)) {
+      setState(() => selectedCombo = combo);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Combo này chưa có sản phẩm')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     double scale(double v) => v * width / 430;
 
-    // ✅ Nếu có combo được chọn → hiển thị ProductListScreen trong cùng tab
     if (selectedCombo != null) {
       return ProductListScreen(
         comboProducts: selectedCombo!['products'],
@@ -43,15 +54,11 @@ class _ComboListScreenState extends State<ComboListScreen> {
       );
     }
 
-    // ✅ Mặc định hiển thị danh sách combo
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: scale(16),
-            vertical: scale(24),
-          ),
+          padding: EdgeInsets.symmetric(horizontal: scale(16), vertical: scale(24)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -73,20 +80,13 @@ class _ComboListScreenState extends State<ComboListScreen> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 191 / 120,
+                    childAspectRatio: 191 / 126,
                   ),
                   itemCount: combos.length,
                   itemBuilder: (context, index) {
-                    final combo = combos[index];
+                    final combo = (combos[index] as Map).cast<String, dynamic>();
                     return GestureDetector(
-                      onTap: () {
-                        // ✅ Không dùng Navigator.push nữa
-                        if (combo['id'] == 1 && combo['products'] != null) {
-                          setState(() {
-                            selectedCombo = combo; // hiển thị danh sách sản phẩm
-                          });
-                        }
-                      },
+                      onTap: () => _handleTap(combo),
                       child: BrandCard(
                         iconPath: combo['icon'],
                         text: combo['text'],

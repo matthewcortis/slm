@@ -118,7 +118,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           crossAxisCount: 2, // 2 cột
                           mainAxisSpacing: 16, // khoảng cách dọc
                           crossAxisSpacing: 16, // khoảng cách ngang
-                          childAspectRatio: 191 / 389, // đúng tỉ lệ card
+                          childAspectRatio: 202 / 355, // đúng tỉ lệ card
                         ),
                     itemCount: filteredProducts.length,
                     itemBuilder: (context, index) {

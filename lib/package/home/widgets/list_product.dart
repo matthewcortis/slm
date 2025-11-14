@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../model/ProductModel.dart';
 import '../../model/product_device_model.dart';
 import '../../product/widgets/product_card.dart';
 import '../../product/widgets/product_card_temp.dart';
+import '../../model/faq_model.dart';
+import '../../model/tutorial_model.dart';
+import '../../news/widgets/faq_item_card.dart';
+import '../../news/widgets/news_item_card.dart';
+//done
 class BestSellerSection extends StatelessWidget {
   final List<ProductHotModel> products;
   const BestSellerSection({super.key, required this.products});
@@ -41,6 +47,8 @@ class BestSellerSection extends StatelessWidget {
                   height: 18 / 12,
                   color: const Color(0xFFEE4037),
                   decoration: TextDecoration.underline,
+                  decorationColor: const Color(0xFFEE4037),
+                  decorationThickness: 1,
                 ),
               ),
             ],
@@ -50,10 +58,10 @@ class BestSellerSection extends StatelessWidget {
 
           // --- Horizontal List ---
           SizedBox(
-            width: scale(398),
-            height: scale(375),
+            width: 398.w,
+            height: 400.h,
             child: ListView.separated(
-               clipBehavior: Clip.none, 
+              clipBehavior: Clip.none,
               scrollDirection: Axis.horizontal,
               itemCount: products.length,
               separatorBuilder: (_, __) => SizedBox(width: scale(16)),
@@ -69,14 +77,22 @@ class BestSellerSection extends StatelessWidget {
 }
 
 class ProductDevice extends StatefulWidget {
-    final List<ProductDeviceModel> products_device;
-  const ProductDevice({super.key, required this.products_device});
+  final List<ProductDeviceModel> products_device;
+  final Future<List<FAQModel>> futureFAQ;
+  final Future<List<TutorialModel>> futureTutorial;
+
+  const ProductDevice({
+    super.key,
+    required this.products_device,
+    required this.futureFAQ,
+    required this.futureTutorial,
+  });
 
   @override
-  State<ProductDevice> createState() => _NewsSectionCardState();
+  State<ProductDevice> createState() => _ProductDeviceState();
 }
 
-class _NewsSectionCardState extends State<ProductDevice> {
+class _ProductDeviceState extends State<ProductDevice> {
   int selectedIndex = 0;
   final List<String> tabs = ["Mega Story", "Hỏi đáp", "Hướng dẫn"];
 
@@ -84,6 +100,7 @@ class _NewsSectionCardState extends State<ProductDevice> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     double scale(double v) => v * width / 430;
+
     return Container(
       width: scale(398),
       padding: EdgeInsets.symmetric(horizontal: scale(4)),
@@ -113,6 +130,8 @@ class _NewsSectionCardState extends State<ProductDevice> {
                   height: 1.5,
                   color: Color(0xFFEE4037),
                   decoration: TextDecoration.underline,
+                  decorationColor: const Color(0xFFEE4037), 
+                  decorationThickness: 1,
                 ),
               ),
             ],
@@ -142,14 +161,13 @@ class _NewsSectionCardState extends State<ProductDevice> {
                     height: 40,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(256),
-                      // 🎨 Khi được chọn → nền xanh, chữ trắng
                       color: isSelected
-                          ? const Color(0xFF17D066) // Secondary-S4
+                          ? const Color(0xFF17D066)
                           : Colors.transparent,
                       boxShadow: isSelected
-                          ? [
-                              const BoxShadow(
-                                color: Color(0x3317D066), // bóng xanh mờ
+                          ? const [
+                              BoxShadow(
+                                color: Color(0x3317D066),
                                 blurRadius: 6,
                                 spreadRadius: 1,
                                 offset: Offset(0, 2),
@@ -164,13 +182,12 @@ class _NewsSectionCardState extends State<ProductDevice> {
                           fontFamily: 'SF Pro',
                           fontWeight: isSelected
                               ? FontWeight.w500
-                              : FontWeight.w400, // Medium / Regular
+                              : FontWeight.w400,
                           fontSize: 16,
                           height: 1.5,
                           color: isSelected
-                              ? Colors
-                                    .white // ✅ Trạng thái chọn: chữ trắng
-                              : const Color(0xFF848484), // Mặc định: xám G4
+                              ? Colors.white
+                              : const Color(0xFF848484),
                         ),
                       ),
                     ),
@@ -179,28 +196,102 @@ class _NewsSectionCardState extends State<ProductDevice> {
               }),
             ),
           ),
+
           const SizedBox(height: 16),
 
-          // ---------------- LISTVIEW (horizontal) ----------------
-         SizedBox(
+          // ---------------- TAB BODY ----------------
+          SizedBox(
             width: scale(398),
-            height: scale(399),
-            child: ListView.separated(
-               clipBehavior: Clip.none, 
-              scrollDirection: Axis.horizontal,
-              itemCount: widget.products_device.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 17),
-              itemBuilder: (context, index) {
-               return ProductDeviceCard(product: widget.products_device[index]);
-              },
+            height: scale(439),
+            child: IndexedStack(
+              index: selectedIndex,
+              children: [
+                ListView.separated(
+                  clipBehavior: Clip.none,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: widget.products_device.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 16),
+                  itemBuilder: (context, index) {
+                    return ProductDeviceCard(
+                      product: widget.products_device[index],
+                    );
+                  },
+                ),
+
+                FutureBuilder<List<FAQModel>>(
+                  future: widget.futureFAQ,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Lỗi tải FAQ: ${snapshot.error}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+
+                    final faqList = snapshot.data ?? [];
+                    if (faqList.isEmpty) {
+                      return const Center(
+                        child: Text('Không có câu hỏi nào hiện tại'),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: EdgeInsets.zero,
+                      primary: false,
+                      clipBehavior: Clip.hardEdge,
+                      itemCount: faqList.length,
+                      itemBuilder: (context, index) {
+                        final faq = faqList[index];
+                        return FAQItem(title: faq.title, content: faq.content);
+                      },
+                    );
+                  },
+                ),
+
+                FutureBuilder<List<TutorialModel>>(
+                  future: widget.futureTutorial,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Lỗi tải tin: ${snapshot.error}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+
+                    final tutorialList = snapshot.data ?? [];
+                    if (tutorialList.isEmpty) {
+                      return const Center(
+                        child: Text('Không có tin tức nào hiện tại'),
+                      );
+                    }
+
+                    return ListView.separated(
+                      padding: EdgeInsets.zero,
+                      primary: false,
+                      clipBehavior: Clip.hardEdge,
+                      itemCount: tutorialList.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 17),
+                      itemBuilder: (context, index) {
+                        return NewsCardCard(news: tutorialList[index]);
+                      },
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
-
-  // ---------------- PRODUCT CARD (giống hình JA Solar) ----------------
- 
-  
 }

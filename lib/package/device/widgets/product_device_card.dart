@@ -82,7 +82,7 @@ class ProductDeviceCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
-                      product.quantityTag, // ✅ đúng theo JSON
+                      product.quantityTag, 
                       style: TextStyle(
                         fontFamily: 'SF Pro',
                         fontWeight: FontWeight.w500,
@@ -122,7 +122,7 @@ class ProductDeviceCard extends StatelessWidget {
                       SizedBox(width: scale(4)),
                       Expanded(
                         child: Text(
-                          product.warranty, // ✅ đúng JSON
+                          product.warranty, 
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontFamily: 'SF Pro',
@@ -139,7 +139,7 @@ class ProductDeviceCard extends StatelessWidget {
 
                 SizedBox(height: scale(8)),
                 Text(
-                  product.title, // ✅ đúng JSON
+                  product.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -152,7 +152,7 @@ class ProductDeviceCard extends StatelessWidget {
                 ),
                 SizedBox(height: scale(4)),
                 Text(
-                  product.price, // ✅ đúng JSON
+                  product.price, 
                   style: TextStyle(
                     fontFamily: 'SF Pro',
                     fontWeight: FontWeight.w600,
@@ -176,7 +176,7 @@ class ProductDeviceCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      product.power, // ✅ đúng JSON
+                      product.power,
                       style: TextStyle(
                         fontFamily: 'SF Pro',
                         fontWeight: FontWeight.w600,
@@ -200,7 +200,7 @@ class ProductDeviceCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      product.technology, // ✅ đúng JSON
+                      product.technology, 
                       style: TextStyle(
                         fontFamily: 'SF Pro',
                         fontWeight: FontWeight.w600,
