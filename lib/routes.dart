@@ -10,21 +10,19 @@ import './package/device/page/detail_product_device_screen.dart';
 import './package/product/page/detail_product_screen.dart';
 import './package/home/page/warranty_device_screenn.dart';
 import 'package:provider/provider.dart';
-//admin
-import './package/admin/home/page/home_screen.dart';
-import './package/admin/admin_bottom_nav.dart';
+//
 import './package/controllers/login/login_controller.dart';
 import './package/admin/quote/page/quote_screen.dart';
 
 class AppRoutes {
   static final String splashScreen = '/splash-screen';
   static final String welcomeScreen = '/welcome-screen';
-  static final String loginWithRegisterScreen = '/login-screen';
+  static final String loginWithRegisterScreen = '/login-with-register-screen';
   static final String loginScreenPage = '/login-screen-page';
   static final String bottomNav = '/bottom-nav';
   static final String homeScreen = '/home';
   static final String detailNewsScreen = '/detail-news';
-  static final String detailProductDevice = '/detail-product-device'; // device
+  static final String detailProductDevice = '/detail-product-device';
   static final String detailProduct = '/detail-product';
   static final String warrantyDeviceScreen = "/warranty";
   static final String homeAdminScreen = '/admin-home';
@@ -51,8 +49,6 @@ class AppRoutes {
 
 
       //admin
-      homeAdminScreen: (context) => const HomeAdminScreen(),
-      adminBottomNav: (context) => const MainAdminNavScreen(),
       quoteScreen: (context) => const TaoBaoGiaScreen()
 
 

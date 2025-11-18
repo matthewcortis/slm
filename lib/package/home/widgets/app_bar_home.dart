@@ -1,20 +1,80 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import '../../controllers/login/auth_storage.dart';
+import 'package:solarmaxapp/routes.dart';
 
 class SolarHeaderFullCard extends StatelessWidget {
   const SolarHeaderFullCard({super.key});
 
-  @override
-  Widget build(BuildContext context) {
+  static const double _baseWidth = 430.0;
+
+  double _scale(BuildContext context, double value) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final baseWidth = 430.0;
-    double scale(double v) => v * screenWidth / baseWidth;
+    return value * screenWidth / _baseWidth;
+  }
+
+  Widget _buildActionByRole(
+    BuildContext context,
+    String? role,
+    double Function(double) scale,
+  ) {
+    if (role == 'admin') {
+      return GestureDetector(
+        onTap: () {
+          Navigator.of(
+            context,
+            rootNavigator: true,
+          ).pushNamed(AppRoutes.quoteScreen);
+        },
+        child: Container(
+          width: scale(36),
+          height: scale(36),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.5),
+            ),
+          ),
+          child: Center(
+            child: SvgPicture.asset(
+              'assets/icons/baogia.svg',
+              width: scale(16),
+              height: scale(16),
+              color: Colors.red,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Container(
-      width: screenWidth,
+      width: scale(36),
+      height: scale(36),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+        ),
+      ),
+      child: const Icon(
+        Icons.notifications_none,
+        size: 20,
+        color: Colors.red,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double scale(double v) => _scale(context, v);
+
+    return Container(
+      width: MediaQuery.of(context).size.width,
       height: scale(430),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
         ),
@@ -36,7 +96,7 @@ class SolarHeaderFullCard extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
-                  height: scale(56),
+                  height: scale(66),
                   padding: EdgeInsets.symmetric(horizontal: scale(10)),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.25),
@@ -52,12 +112,13 @@ class SolarHeaderFullCard extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            width: scale(48),
-                            height: scale(48),
+                            width: scale(55),
+                            height: scale(55),
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               image: DecorationImage(
-                                image: AssetImage('assets/images/avatar.jpg'),
+                                image:
+                                    AssetImage('assets/images/avatar.jpg'),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -70,24 +131,20 @@ class SolarHeaderFullCard extends StatelessWidget {
                               Text(
                                 'Khuất Duy Quang',
                                 style: TextStyle(
-                                  fontFamily:
-                                      'SF Pro', 
-                                  fontWeight: FontWeight
-                                      .w600, 
+                                  fontFamily: 'SF Pro',
+                                  fontWeight: FontWeight.w600,
                                   fontStyle: FontStyle.normal,
-                                  fontSize: scale(14),
-                                  height: 20 / 14, 
+                                  fontSize: scale(16),
+                                  height: 20 / 16,
                                   letterSpacing: 0,
-                                  color: const Color(
-                                    0xFF4F4F4F,
-                                  ), 
+                                  color: const Color(0xFF4F4F4F),
                                 ),
                               ),
                               Text(
                                 'Khách hàng',
                                 style: TextStyle(
                                   fontFamily: 'SF Pro',
-                                  fontWeight: FontWeight.w400, 
+                                  fontWeight: FontWeight.w400,
                                   fontStyle: FontStyle.normal,
                                   fontSize: scale(12),
                                   height: 18 / 12,
@@ -99,20 +156,12 @@ class SolarHeaderFullCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Container(
-                        width: scale(36),
-                        height: scale(36),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.5),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.notifications_none,
-                          size: 20,
-                          color: Colors.red,
-                        ),
+                      FutureBuilder<String?>(
+                        future: AuthStorage.getRole(),
+                        builder: (context, snapshot) {
+                          final role = snapshot.data;
+                          return _buildActionByRole(context, role, scale);
+                        },
                       ),
                     ],
                   ),
@@ -128,7 +177,7 @@ class SolarHeaderFullCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
+                // Pill "Hy - Brid"
                 Container(
                   width: scale(84),
                   height: scale(28),
@@ -145,14 +194,10 @@ class SolarHeaderFullCard extends StatelessWidget {
                           vertical: scale(4),
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(
-                            0.25,
-                          ), 
+                          color: Colors.white.withOpacity(0.25),
                           borderRadius: BorderRadius.circular(1000),
                           border: Border.all(
-                            color: Colors.white.withOpacity(
-                              0.4,
-                            ), 
+                            color: Colors.white.withOpacity(0.4),
                             width: 1,
                           ),
                         ),
@@ -171,22 +216,19 @@ class SolarHeaderFullCard extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 SizedBox(height: scale(6)),
                 Text(
                   'Bán hàng thật dễ dàng',
                   style: TextStyle(
-                    fontFamily:
-                        'SF Pro',
+                    fontFamily: 'SF Pro',
                     fontWeight: FontWeight.w600,
                     fontStyle: FontStyle.normal,
-                    fontSize: scale(24), 
+                    fontSize: scale(24),
                     height: 36 / 24,
-                    letterSpacing: 0, 
-                    color: Colors.white, 
+                    letterSpacing: 0,
+                    color: Colors.white,
                   ),
                 ),
-
                 SizedBox(height: scale(10)),
                 Container(
                   width: scale(148),
@@ -194,36 +236,44 @@ class SolarHeaderFullCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFFED1C24),
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
-                        color: const Color(0x26D1D1D1), 
+                        color: Color(0x26D1D1D1),
                         blurRadius: 34,
-                        offset: const Offset(0, 15),
+                        offset: Offset(0, 15),
                       ),
                       BoxShadow(
-                        color: const Color(0x21D1D1D1), 
+                        color: Color(0x21D1D1D1),
                         blurRadius: 61,
-                        offset: const Offset(0, 61),
+                        offset: Offset(0, 61),
                       ),
                       BoxShadow(
-                        color: const Color(0x14D1D1D1), 
+                        color: Color(0x14D1D1D1),
                         blurRadius: 82,
-                        offset: const Offset(0, 137),
+                        offset: Offset(0, 137),
                       ),
                       BoxShadow(
-                        color: const Color(0x0FD1D1D1), 
+                        color: Color(0x0FD1D1D1),
                         blurRadius: 98,
-                        offset: const Offset(0, 244),
+                        offset: Offset(0, 244),
                       ),
                       BoxShadow(
-                        color: const Color(0x00D1D1D1),
+                        color: Color(0x00D1D1D1),
                         blurRadius: 107,
-                        offset: const Offset(0, 382),
+                        offset: Offset(0, 382),
                       ),
                     ],
                   ),
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(
+                        context,
+                        rootNavigator: true,
+                      ).pushNamedAndRemoveUntil(
+                        AppRoutes.welcomeScreen,
+                        (route) => false,
+                      );
+                    },
                     icon: const Icon(
                       Icons.arrow_forward,
                       size: 16,
@@ -239,10 +289,8 @@ class SolarHeaderFullCard extends StatelessWidget {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          Colors.transparent, // vì Container có màu rồi
-                      shadowColor:
-                          Colors.transparent, // tắt shadow mặc định của button
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
                       padding: EdgeInsets.symmetric(
                         horizontal: scale(18),
                         vertical: scale(8),
@@ -262,135 +310,3 @@ class SolarHeaderFullCard extends StatelessWidget {
     );
   }
 }
-
-// class ContractValueCard extends StatelessWidget {
-//   const ContractValueCard({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final width = MediaQuery.of(context).size.width;
-//     double scale(double v) => v * width / 430;
-
-//     return GestureDetector(
-//       onTap: () {
-//         Navigator.of(
-//           context,
-//           rootNavigator: false,
-//         ).pushNamed('/warranty');
-//       },
-
-//       child: Center(
-//         child: Container(
-//           width: scale(398),
-//           height: scale(93),
-//           padding: EdgeInsets.all(scale(16)),
-//           decoration: BoxDecoration(
-//             color: Colors.white,
-//             borderRadius: BorderRadius.circular(20),
-//             border: Border.all(color: const Color(0xFFF3F3F3), width: 1),
-//             boxShadow: const [
-//               BoxShadow(
-//                 color: Color(0x1F000000), // #0000001F
-//                 blurRadius: 20,
-//                 offset: Offset(0, 2),
-//               ),
-//             ],
-//           ),
-//           child: Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//             crossAxisAlignment: CrossAxisAlignment.center,
-//             children: [
-//               // LEFT SIDE
-//               Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   // Capsule "Ngày bàn giao"
-//                   Container(
-//                     padding: EdgeInsets.symmetric(
-//                       horizontal: scale(8),
-//                       vertical: scale(4),
-//                     ),
-//                     decoration: BoxDecoration(
-//                       color: const Color(0x33E6E6E6), // #E6E6E633
-//                       borderRadius: BorderRadius.circular(100),
-//                       border: Border.all(color: const Color(0xFFF3F3F3)),
-//                     ),
-//                     child: Text(
-//                       'Ngày bàn giao: 12/03/2025',
-//                       style: TextStyle(
-//                         fontFamily: 'SFProDisplay',
-//                         fontWeight: FontWeight.w400,
-//                         fontSize: scale(10),
-//                         height: 18 / 12,
-//                         color: const Color(0xFF4F4F4F),
-//                       ),
-//                     ),
-//                   ),
-//                   SizedBox(height: scale(8)),
-//                   // Label “Tổng giá trị hợp đồng”
-//                   Text(
-//                     'Tổng giá trị hợp đồng',
-//                     style: TextStyle(
-//                       fontFamily: 'SFProDisplay',
-//                       fontWeight: FontWeight.w400,
-//                       fontSize: 14,
-//                       height: 20 / 14,
-//                       color: const Color(0xFF4F4F4F),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-
-//               // RIGHT SIDE
-//               PriceToggle(),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-// class PriceToggle extends StatefulWidget {
-//   const PriceToggle({super.key});
-
-//   @override
-//   State<PriceToggle> createState() => _PriceToggleState();
-// }
-
-// class _PriceToggleState extends State<PriceToggle> {
-//   bool isHidden = false;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final width = MediaQuery.of(context).size.width;
-//     double scale(double v) => v * width / 430;
-
-//     return Row(
-//       children: [
-//         Text(
-//           isHidden ? '••••••••' : '12.650.000',
-//           style: TextStyle(
-//             fontFamily: 'SFProDisplay',
-//             fontWeight: FontWeight.w600,
-//             fontSize: scale(24),
-//             height: 30 / 24,
-//             color: const Color(0xFFEE4037),
-//           ),
-//         ),
-//         SizedBox(width: scale(6)),
-//         GestureDetector(
-//           onTap: () {
-//             setState(() => isHidden = !isHidden);
-//           },
-//           child: Icon(
-//             isHidden
-//                 ? Icons.visibility_off_outlined
-//                 : Icons.visibility_outlined,
-//             size: 20,
-//             color: const Color(0xFF7B7B7B),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }

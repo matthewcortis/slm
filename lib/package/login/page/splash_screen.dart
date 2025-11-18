@@ -34,13 +34,13 @@ class _SplashScreenState extends State<SplashScreen>
       } else {
         switch (role) {
           case "admin":
-            Navigator.pushReplacementNamed(context, AppRoutes.adminBottomNav);
+            Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
             break;
           case "staff":
-            Navigator.pushReplacementNamed(context, AppRoutes.adminBottomNav);
+            Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
             break;
           case "customer":
-            Navigator.pushReplacementNamed(context, '/bottom-nav');
+            Navigator.pushReplacementNamed(context,  AppRoutes.bottomNav);
             break;
           default:
             Navigator.pushReplacementNamed(context, AppRoutes.loginScreenPage);
@@ -74,8 +74,6 @@ class _SplashScreenState extends State<SplashScreen>
             ),
 
             const SizedBox(height: 24),
-
-            // --- Thanh loading gradient ---
             if (_controller != null)
               AnimatedBuilder(
                 animation: _controller!,

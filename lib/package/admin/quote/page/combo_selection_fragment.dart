@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../product/widgets/product_card.dart';
+import '../widgets/equipment/card_item_product_hy_on.dart';
 import '../../../model/ProductModel.dart';
 import '../../../product/services/load_product.dart';
 
@@ -268,8 +268,9 @@ class ProductListScreen extends StatefulWidget {
   final String? comboName;
   final VoidCallback? onBack;
   final bool? initialIsHybrid;
-
   final void Function(String type, bool hasAny)? onTypeSelected;
+  final void Function(ProductHotModel? product)? onProductSelected;
+
   const ProductListScreen({
     super.key,
     this.comboProducts,
@@ -277,6 +278,7 @@ class ProductListScreen extends StatefulWidget {
     this.onBack,
     this.onTypeSelected,
     this.initialIsHybrid,
+    this.onProductSelected,
   });
 
   @override
@@ -285,7 +287,7 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   late bool isHybridSelected; // <-- dùng late
-
+  int? selectedIndex;
   List<ProductHotModel> products = [];
 
   @override
@@ -308,6 +310,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       setState(() => products = data);
     }
     _notifyType();
+    widget.onProductSelected?.call(null);
   }
 
   void _notifyType() {
@@ -347,21 +350,44 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
           // --- Product List ---
           Expanded(
-            child: products.isEmpty
+            child: filteredProducts.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : GridView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // 2 cột
-                          mainAxisSpacing: 16, // khoảng cách dọc
-                          crossAxisSpacing: 16, // khoảng cách ngang
-                          childAspectRatio: 191 / 389, // đúng tỉ lệ card
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: 191 / 290,
                         ),
                     itemCount: filteredProducts.length,
                     itemBuilder: (context, index) {
                       final product = filteredProducts[index];
-                      return ProductItemCard(product: product);
+                      final bool isSelected = selectedIndex == index;
+
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (selectedIndex == index) {
+                              selectedIndex = null; // bỏ chọn
+                            } else {
+                              selectedIndex = index; // chọn mới
+                            }
+                          });
+                          // báo cho màn cha biết hiện có chọn product hay không
+                          ProductHotModel? selectedProduct;
+                          if (selectedIndex != null) {
+                            selectedProduct = filteredProducts[selectedIndex!];
+                          }
+
+                          widget.onProductSelected?.call(selectedProduct);
+                        },
+                        child: ProductItemCard(
+                          product: product,
+                          isSelected: isSelected,
+                        ),
+                      );
                     },
                   ),
           ),
@@ -370,14 +396,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
+  // doi tab
   Widget _buildTabButton(String title, bool isHybrid) {
     final selected = isHybrid ? isHybridSelected : !isHybridSelected;
     return Expanded(
       child: GestureDetector(
         onTap: () {
           if (isHybridSelected != isHybrid) {
-            setState(() => isHybridSelected = isHybrid);
+            setState(() {
+              isHybridSelected = isHybrid;
+              selectedIndex = null; // <-- đổi loại thì bỏ chọn product cũ
+            });
             _notifyType();
+             widget.onProductSelected?.call(null); 
           }
         },
         child: Container(

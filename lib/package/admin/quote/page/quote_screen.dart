@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../widgets/quote/step_progress.dart';
 import './combo_selection_fragment.dart';
 import './equipment_selection_fragment.dart'; // chứa DanhMucScreen
-// import './product_list_screen.dart'; // giả định bạn tách file
+import '../../../model/ProductModel.dart';
 
 class TaoBaoGiaScreen extends StatefulWidget {
   const TaoBaoGiaScreen({super.key});
@@ -19,13 +19,20 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
 
   String? _selectedType; // 'Hy-Brid' | 'On-grid'
   bool _hasType = false; // có sản phẩm thuộc loại đang chọn
+  bool _hasProductSelection = false;
+  String get _totalDisplay {
+    return _selectedProduct?.price ?? '0đ';
+  }
 
+  ProductHotModel? _selectedProduct;
   void _handleSelectionChanged(bool hasSelection, Map<String, dynamic>? combo) {
     setState(() {
       _hasSelection = hasSelection;
       _selectedCombo = combo;
       _selectedType = null;
       _hasType = false;
+      _hasProductSelection = false;
+      _selectedProduct = null;
     });
   }
 
@@ -34,6 +41,13 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
     setState(() {
       _selectedType = hasAny ? type : null;
       _hasType = hasAny;
+    });
+  }
+
+  void _onProductSelected(ProductHotModel? product) {
+    setState(() {
+      _selectedProduct = product;
+      _hasProductSelection = product != null; // true nếu đã chọn 1 product
     });
   }
 
@@ -65,7 +79,7 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
         }
         break;
       case 2:
-        if (_selectedType != null && _hasType) {
+        if (_selectedType != null && _hasType && _hasProductSelection) {
           setState(() => _step = 3);
         }
         break;
@@ -82,13 +96,29 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
     ).showSnackBar(const SnackBar(content: Text('Đã tạo báo giá')));
   }
 
-  void _handleBack() {
-    if (_step > 1) {
-      setState(() => _step -= 1);
-    } else {
-      Navigator.of(context).maybePop();
-    }
+ void _handleBack() {
+  if (_step > 1) {
+    setState(() {
+      if (_step == 3) {
+        // Back từ bước 3 về bước 2:
+        // - Xoá sản phẩm đã chọn
+        // - Tắt nút "Tiếp tục" ở bước 2
+        _step = 2;
+        _selectedProduct = null;
+        _hasProductSelection = false;
+
+        // Nếu bạn muốn reset luôn tab type thì bỏ comment 2 dòng dưới:
+        _selectedType = null;
+        _hasType = false;
+      } else {
+        // Bước 2 -> 1, giữ logic cũ
+        _step -= 1;
+      }
+    });
+  } else {
+    Navigator.of(context).maybePop();
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +126,7 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
     final String ctaLabel = _step == 3 ? 'Tạo báo giá' : 'Tiếp tục';
     final bool ctaEnabled = switch (_step) {
       1 => _hasSelection && _selectedCombo != null,
-      2 => _selectedType != null && _hasType,
+      2 => _selectedType != null && _hasType && _hasProductSelection,
       _ => true,
     };
 
@@ -157,20 +187,116 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
               ),
 
               // CTA
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                width: double.infinity,
-                height: 56.h,
-                margin: EdgeInsets.only(top: 12.h, bottom: 12.h),
-                child: PrimaryButton(
-                  label: ctaLabel, // <-- dùng label tính ở trên
-                  enabled: ctaEnabled,
-                  onPressed: ctaEnabled ? _goNext : null,
+              // Container(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16),
+              //   width: double.infinity,
+              //   height: 56.h,
+              //   margin: EdgeInsets.only(top: 12.h, bottom: 12.h),
+              //   child: PrimaryButton(
+              //     label: ctaLabel, // <-- dùng label tính ở trên
+              //     enabled: ctaEnabled,
+              //     onPressed: ctaEnabled ? _goNext : null,
+              //   ),
+              // ),
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 16.w,
+                  right: 16.w,
+                  top: 12.h,
+                  bottom: 12.h,
                 ),
+                child: _buildBottomBar(ctaLabel, ctaEnabled),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(String ctaLabel, bool ctaEnabled) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      transitionBuilder: (child, animation) {
+        // hiệu ứng thu/phóng nhẹ theo chiều ngang
+        return SizeTransition(
+          sizeFactor: animation,
+          axis: Axis.horizontal,
+          child: child,
+        );
+      },
+      child: _step == 3
+          ? _buildQuoteSummaryBar() // layout bước 3
+          : _buildNormalCtaBar(ctaLabel, ctaEnabled), // layout bước 1–2
+    );
+  }
+
+  // Bước 1–2: nút full width như cũ
+  Widget _buildNormalCtaBar(String ctaLabel, bool ctaEnabled) {
+    return Container(
+      key: const ValueKey('cta-normal'),
+      width: double.infinity,
+      height: 56.h,
+      child: PrimaryButton(
+        label: ctaLabel,
+        enabled: ctaEnabled,
+        onPressed: ctaEnabled ? _goNext : null,
+      ),
+    );
+  }
+
+  // Bước 3: hiển thị tổng + nút nhỏ "Tạo báo giá"
+  Widget _buildQuoteSummaryBar() {
+    return Container(
+      key: const ValueKey('cta-summary'),
+      width: double.infinity,
+      height: 64.h,
+      child: Row(
+        children: [
+          // Tổng tạm tính
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Tổng tạm tính (bao gồm VAT)',
+                  style: TextStyle(
+                    fontFamily: 'SFProDisplay',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12.sp,
+                    height: 18 / 12,
+                    color: const Color(0xFF848484),
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  _totalDisplay, 
+                  style: TextStyle(
+                    fontFamily: 'SFProDisplay',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20.sp,
+                    height: 24 / 20,
+                    color: const Color(0xFFEE4037),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(width: 12.w),
+
+          // Nút "Tạo báo giá" nhỏ hơn, bo tròn
+          SizedBox(
+            width: 190.w,
+            height: 56.h,
+            child: PrimaryButton(
+              label: 'Tạo báo giá',
+              enabled: true, // đến bước 3 thì luôn cho phép
+              onPressed: _goNext, // gọi _goNext() -> _submitQuote()
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -185,12 +311,15 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
       return ProductListScreen(
         comboProducts: (_selectedCombo?['products'] as List?) ?? [],
         comboName: _selectedCombo?['text'] ?? '',
-        onTypeSelected: _onTypeSelected, // <-- thêm callback
+        onTypeSelected: _onTypeSelected,
         initialIsHybrid: _selectedType == 'Hy-Brid',
+        onProductSelected: _onProductSelected,
       );
     }
-
-    return const DanhMucScreen();
+    return DanhMucScreen(
+      selectedType: _selectedType,
+      selectedPhase: _selectedProduct?.phase,
+    );
   }
 }
 

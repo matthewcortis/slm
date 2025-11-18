@@ -26,10 +26,10 @@ class LoginController extends ChangeNotifier {
 
     switch (acc.role) {
       case "admin":
-        Navigator.pushNamed(context, '/admin-home');
+        Navigator.pushNamed(context, '/bottom-nav');
         break;
       case "staff":
-        Navigator.pushNamed(context, '/admin-home');
+        Navigator.pushNamed(context, '/bottom-nav');
         break;
       case "customer":
         Navigator.pushNamed(context, '/bottom-nav');

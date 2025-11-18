@@ -43,10 +43,10 @@ class _LoginScreenState extends State<LoginWithRegisterScreen> {
         switch (role) {
           case "admin":
           case "staff":
-            Navigator.pushReplacementNamed(context, '/admin-home');
+            Navigator.pushReplacementNamed(context, '/bottom-nav');
             break;
           case "customer":
-            Navigator.pushReplacementNamed(context, '/home');
+            Navigator.pushReplacementNamed(context, '/bottom-nav');
             break;
         }
       }

@@ -1,19 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../equipment/card_item_option.dart';
+import '../equipment/card_item_device.dart';
+import '../bottomsheet/bottomsheet_select.dart';
 
 class DanhMucThietBiVaVatTu extends StatefulWidget {
-  const DanhMucThietBiVaVatTu({super.key});
+  final String? selectedType; // 'Hy-Brid' hoặc 'On-grid'
+  final String? selectedPhase; // '1', '3', ...
+
+  const DanhMucThietBiVaVatTu({
+    super.key,
+    this.selectedType,
+    this.selectedPhase,
+  });
 
   @override
   State<DanhMucThietBiVaVatTu> createState() => _DanhMucThietBiVaVatTuState();
 }
 
 class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
-  // demo selections
-  final List<String> _selectedTags = ['Hy-Brid', 'Một pha'];
-
   // segmented choice
   bool _apMai = true;
+  List<String> get _selectedTags {
+    final tags = <String>[];
+
+    if (widget.selectedType != null && widget.selectedType!.isNotEmpty) {
+      tags.add(widget.selectedType!); // Hy-Brid / On-grid
+    }
+
+    final phase = widget.selectedPhase;
+    if (phase != null && phase.isNotEmpty) {
+      // Map phase "1" -> "Một pha", còn lại -> "Ba pha"
+      final phaseLabel = phase == '1' ? 'Một pha' : 'Ba pha';
+      tags.add(phaseLabel);
+    }
+
+    return tags;
+  }
+
+  void _openProductBottomSheet(
+    BuildContext context, {
+    required String categoryLabel,
+  }) {
+    showSelectProductBottomSheet(
+      context,
+      type: widget.selectedType, // ← nhận từ constructor
+      phase: widget.selectedPhase, // ← nhận từ constructor
+      categoryLabel: categoryLabel, // ← nhận từ OptionCard
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +65,12 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
                 'Danh mục thiết bị và vật tư',
                 style: const TextStyle(
                   fontFamily: 'SF Pro',
-                  fontWeight: FontWeight.w600, // tương đương 590
-                  fontStyle:
-                      FontStyle.normal, // Semibold = normal style + weight 600
+                  fontWeight: FontWeight.w600,
+                  fontStyle: FontStyle.normal,
                   fontSize: 18,
-                  height: 28 / 18, // line-height 28px
-                  letterSpacing: 0, // letter-spacing: 0px
-                  color: Color(0xFF4F4F4F), // Gray G5
+                  height: 28 / 18,
+                  letterSpacing: 0,
+                  color: Color(0xFF4F4F4F),
                 ),
               ),
 
@@ -73,14 +107,37 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
 
               // Khối 4 lựa chọn
               Column(
-                children: const [
-                  _OptionCard(title: 'Tấm quang năng'),
+                children: [
+                  OptionCard(
+                    title: 'Tấm quang năng',
+                    items: [
+                      SolarMaxCartCard(
+                        image: AssetImage('assets/images/product.png'),
+                        title: 'Tủ điện NLMT SolarMax',
+                        modeTag: 'Hy-Brid',
+                        congSuat: '1 pha',
+                        chiSoIp: 'IP66',
+                        khoiLuong: '24 kg',
+                        baoHanh: '05 năm',
+                        priceText: '9.999.999đ',
+                        quantity: 1,
+                        onIncrease: () {},
+                        onDecrease: () {},
+                      ),
+                    ],
+                    onChange: () {
+                      _openProductBottomSheet(
+                        context,
+                        categoryLabel: 'Tấm quang năng',
+                      );
+                    },
+                  ),
                   SizedBox(height: 12),
-                  _OptionCard(title: 'Biến tần'),
+                  OptionCard(title: 'Biến tần'),
                   SizedBox(height: 12),
-                  _OptionCard(title: 'Pin lưu trữ'),
+                  OptionCard(title: 'Pin lưu trữ'),
                   SizedBox(height: 12),
-                  _OptionCard(title: 'Hình thức lắp đặt'),
+                  OptionCard(title: 'Hình thức lắp đặt'),
                 ],
               ),
 
@@ -90,7 +147,7 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
               Row(
                 children: [
                   Expanded(
-                    child: _SegmentPill(
+                    child: SegmentPill(
                       label: 'Áp mái',
                       selected: _apMai,
                       onTap: () => setState(() => _apMai = true),
@@ -98,7 +155,7 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _SegmentPill(
+                    child: SegmentPill(
                       label: 'Khung sắt',
                       selected: !_apMai,
                       onTap: () => setState(() => _apMai = false),
@@ -134,7 +191,7 @@ class _TagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 60,
+      width: 80,
       height: 26,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -162,189 +219,6 @@ class _TagChip extends StatelessWidget {
             height: 18 / 12,
             color: Color(0xFF4F4F4F), // Gray G5
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _OptionCard extends StatelessWidget {
-  const _OptionCard({required this.title});
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 64,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x42D1D1D1), // 26%
-            offset: Offset(0, 15),
-            blurRadius: 34,
-          ),
-          BoxShadow(
-            color: Color(0x36D1D1D1), // 21%
-            offset: Offset(0, 61),
-            blurRadius: 61,
-          ),
-          BoxShadow(
-            color: Color(0x24D1D1D1), // 14%
-            offset: Offset(0, 137),
-            blurRadius: 82,
-          ),
-          BoxShadow(
-            color: Color(0x14D1D1D1), // 08~10%
-            offset: Offset(0, 244),
-            blurRadius: 98,
-          ),
-          BoxShadow(
-            color: Color(0x00D1D1D1), // 0%
-            offset: Offset(0, 382),
-            blurRadius: 107,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontFamily: 'SF Pro',
-                fontWeight: FontWeight.w400, // Regular
-                fontStyle: FontStyle.normal,
-                fontSize: 16,
-                height: 24 / 16, // line-height 24px
-                letterSpacing: 0, // letter-spacing: 0px
-                color: Color(0xFF4F4F4F), // Gray-700
-              ),
-            ),
-          ),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 24,
-            color: Color(0xFF8E8E93),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SegmentPill extends StatelessWidget {
-  const _SegmentPill({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: onTap,
-      child: Container(
-        width: 191,
-        height: 56,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFFE6E6E6) : Colors.white, // BG
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected
-                ? const Color(0xFFDBEBDD)
-                : const Color.fromARGB(255, 250, 250, 250),
-            width: 1,
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x42D1D1D1),
-              offset: Offset(0, 15),
-              blurRadius: 34,
-            ),
-            BoxShadow(
-              color: Color(0x36D1D1D1),
-              offset: Offset(0, 61),
-              blurRadius: 61,
-            ),
-            BoxShadow(
-              color: Color(0x24D1D1D1),
-              offset: Offset(0, 137),
-              blurRadius: 82,
-            ),
-            BoxShadow(
-              color: Color(0x14D1D1D1),
-              offset: Offset(0, 244),
-              blurRadius: 98,
-            ),
-            BoxShadow(
-              color: Color(0x00D1D1D1),
-              offset: Offset(0, 382),
-              blurRadius: 107,
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, // justify-content
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'SF Pro',
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                height: 24 / 16,
-                color: Color(0xFF4F4F4F),
-              ),
-            ),
-            // chấm trạng thái
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x1A000000),
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-                border: Border.all(
-                  color: const Color.fromARGB(255, 250, 248, 248),
-                ),
-              ),
-              child: Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  width: 14,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? const Color(0xFF34C759)
-                        : Colors.transparent,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: selected
-                          ? const Color(0xFF34C759)
-                          : const Color(0xFFDBEBDD),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

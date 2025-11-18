@@ -48,7 +48,7 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
         switch (role) {
           case "admin":
           case "staff":
-            Navigator.pushReplacementNamed(context, AppRoutes.adminBottomNav);
+            Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
             break;
           case "customer":
          

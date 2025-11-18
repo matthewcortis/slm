@@ -8,7 +8,9 @@ import '../../news/services/load_tutorial.dart';
 import '../../model/faq_model.dart';
 import '../../model/tutorial_model.dart';
 import '../widgets/warranty_price.dart';
-
+import '../widgets/bank_contract_info.dart';
+import '../../controllers/login/auth_storage.dart';
+import '../../../routes.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -21,12 +23,22 @@ class _HomeScreenState extends State<HomeScreen> {
   late final Future<List<FAQModel>> _futureFAQ;
   late final Future<List<TutorialModel>> _futureTutorial;
 
+  String? userRole;
+
   @override
   void initState() {
     super.initState();
     _futureProducts = loadAllProducts();
     _futureFAQ = loadFAQ();
     _futureTutorial = loadTutorial();
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    final role = await AuthStorage.getRole(); // cần thêm hàm này trong AuthStorage
+    setState(() {
+      userRole = role; // null = khách vãng lai
+    });
   }
 
   @override
@@ -51,16 +63,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const SolarHeaderFullCard(),
                   const SizedBox(height: 24),
-                  ContractValueCard(
-                    deliveryDate: "12/03/2025",
-                    totalValue: "12.650.000 đ",
-                    onView: () {
-                      Navigator.of(
-                        context,
-                        rootNavigator: false,
-                      ).pushNamed('/warranty');
-                    },
-                  ),
+
+                  if (userRole == null) ...[
+                    const SizedBox.shrink(),
+                  ] else if (userRole == "customer") ...[
+                    ContractValueCard(
+                      deliveryDate: "12/03/2025",
+                      totalValue: "12.650.000 đ",
+                      onView: () {
+                        Navigator.of(context).pushNamed(AppRoutes.warrantyDeviceScreen);
+                      },
+                    ),
+                  ] else if (userRole == "admin" || userRole == "staff") ...[
+                    const BankContractCard(),
+                  ],
+
                   const SizedBox(height: 24),
 
                   BestSellerSection(products: hotProducts),

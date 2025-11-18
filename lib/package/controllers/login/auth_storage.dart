@@ -16,4 +16,8 @@ class AuthStorage {
     await p.remove(_kToken);
     await p.remove('userid');
   }
+  static Future<String?> getRole() async {
+  final p = await SharedPreferences.getInstance();
+  return p.getString(_kRole); 
+}
 }

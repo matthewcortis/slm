@@ -43,7 +43,7 @@ class _AccessoriesListScreenState extends State<AccessoriesListScreen> {
     }
 
     return ListView.separated(
-      shrinkWrap: true,           // quan trọng khi nằm trong SingleChildScrollView
+      shrinkWrap: true,        
       physics: const NeverScrollableScrollPhysics(), // tắt cuộn riêng
       padding: const EdgeInsets.all(16),
 

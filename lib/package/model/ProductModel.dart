@@ -3,6 +3,7 @@ class ProductHotModel {
   final String name;
   final String price;
   final String type;
+  final String phase;
   final String saving;
   final String image;
 
@@ -11,6 +12,7 @@ class ProductHotModel {
     required this.name,
     required this.price,
     required this.type,
+    required this.phase,
     required this.saving,
     required this.image,
   });
@@ -21,6 +23,7 @@ class ProductHotModel {
       name: json['name'] ?? '',
       price: json['price'] ?? '',
       type: json['type'] ?? '',
+      phase: json['phase'] ?? '',
       saving: json['saving'] ?? '',
       image: json['image'] ?? '',
     );
@@ -31,6 +34,7 @@ class ProductHotModel {
         'name': name,
         'price': price,
         'type': type,
+        'phase': phase,
         'saving': saving,
         'image': image,
       };

@@ -99,10 +99,10 @@ class WelcomeScreen extends StatelessWidget {
                     height: scaleH(48),
                     child: ElevatedButton(
                       onPressed: () {
-                        // Navigator.pushNamed(
-                        //   context,
-                        //   AppRoutes.loginWithRegisterScreen,
-                        // );
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.loginScreenPage,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFED1C24),
