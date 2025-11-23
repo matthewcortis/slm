@@ -38,7 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String? bankNameFromAuth;
   String? bankAccountFromAuth;
   String? fullName;
-  String? avatarUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTM9VGV6Xyj-5_ZyotLIuuTGTfLHe0f2w44rQ&s';
+  String? avatarUrl =
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTM9VGV6Xyj-5_ZyotLIuuTGTfLHe0f2w44rQ&s';
 
   @override
   void initState() {
@@ -99,13 +100,51 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (userRole == null || userRole == "guest") ...[
                     const SizedBox.shrink(),
                   ] else if (userRole == "customer") ...[
-                    ContractValueCard(
-                      deliveryDate: "12/03/2025",
-                      totalValue: "12.650.000 đ",
-                      onView: () {
-                        Navigator.of(
-                          context,
-                        ).pushNamed(AppRoutes.warrantyDeviceScreen);
+                    FutureBuilder<List<HopDongModel>>(
+                      future: _futureHopDong,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          debugPrint('Lỗi tải hợp đồng: ${snapshot.error}');
+                        }
+
+                        final list = snapshot.data ?? [];
+
+                        HopDongModel? hopDong;
+                        if (list.isNotEmpty) {
+                          hopDong = list.first;
+                        }
+                        String handoverDateText = '';
+                        double tongGia = 0;
+                        if (hopDong != null) {
+                          handoverDateText = hopDong.taoLuc != null
+                              ? AppUtils.date(hopDong.taoLuc!)
+                              : '';
+                          tongGia = hopDong.tongGia ?? 0;
+                        }
+
+                        return ContractValueCard(
+                          // Luôn truyền, có thể là '' và 0
+                          deliveryDate: handoverDateText,
+                          totalValue: AppUtils.currency(tongGia),
+                          // onView: () {
+                          //   // Nếu muốn: chỉ cho vào màn bảo hành khi có hợp đồng
+                          //   if (hopDong != null) {
+                          //     Navigator.of(
+                          //       context,
+                          //     ).pushNamed(AppRoutes.warrantyDeviceScreen);
+                          //   } else {
+                          //     // Không có hợp đồng mà vẫn bấm: tùy bạn xử lý
+                          //     // ví dụ: showSnackBar, dialog, hoặc không làm gì
+                          //   }
+                          // },
+                        );
                       },
                     ),
                   ] else if (userRole == "admin" ||

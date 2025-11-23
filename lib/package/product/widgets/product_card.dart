@@ -163,7 +163,7 @@ class ProductItemCard extends StatelessWidget {
 
                         Expanded(
                           child: Text(
-                            '${(combo.congSuatHeThong / 1000).toStringAsFixed(1)} kWp',
+                            '${(combo.congSuatHeThong / 1000).toStringAsFixed(1)} W/p',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

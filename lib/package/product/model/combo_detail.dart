@@ -28,6 +28,7 @@ class TronGoiDetailData {
   final double sanLuongTB; // (min + max) / 2
   final double? soThangHoanVon; // tongGia / sanLuongTB
   final String? showingTime; // convertMonthToYearAndMonth(soThangHoanVon)
+  final double? dungLuongLuuTruKwh;
 
   final num?
   congSuatTamPin; // vatTu.nhomVatTu.ma == 'TAM_PIN' -> duLieuRieng['cong_suat']
@@ -52,6 +53,7 @@ class TronGoiDetailData {
     required this.congSuatBienTan,
     required this.kichThuocTamPinText,
     required this.dienTichTamPinM2,
+    required this.dungLuongLuuTruKwh,
   });
 }
 
@@ -138,6 +140,12 @@ extension TronGoiComputed on TronGoiBase {
   /// Công suất biến tần (vatTu.nhomVatTu.ma == 'BIEN_TAN' -> duLieuRieng.cong_suat)
   num? get congSuatBienTan => _getNumericAttr('BIEN_TAN', 'cong_suat');
 
+  /// Dung lượng pin lưu trữ (vatTu.nhomVatTu.ma == 'PIN_LUU_TRU' -> duLieuRieng.dung_luong)
+  double? get dungLuongLuuTruKwh {
+    final val = _getNumericAttr('PIN_LUU_TRU', 'dung_luong');
+    return val?.toDouble();
+  }
+
   /// =============================
   ///  Kích thước & diện tích tấm pin
   /// =============================
@@ -149,33 +157,45 @@ extension TronGoiComputed on TronGoiBase {
     return attr?.giaTri?.toString();
   }
 
-  /// Diện tích tấm pin (m2) = dài_mm * rộng_mm / 1_000_000
-  double? get dienTichTamPinM2 {
-    final raw = kichThuocTamPinText;
-    if (raw == null || raw.isEmpty) return null;
+  /// Diện tích tấm pin (m2) = dài_mm * rộng_mm *  so luong tam pin
 
-    // Tách theo 'x', 'X' hoặc '×'
-    final parts = raw.split(RegExp(r'[xX×]')).map((e) => e.trim()).toList();
-    if (parts.length < 2) return null;
+double? get dienTichTamPinM2 {
+  final raw = kichThuocTamPinText;
+  if (raw == null || raw.isEmpty) return null;
 
-    // Loại bỏ ký tự không phải số, chấm, phẩy
-    double? parseMm(String s) {
-      final cleaned = s.replaceAll(RegExp(r'[^0-9,\.]'), '');
-      // Đổi "2,5" -> "2.5"
-      final normalized = cleaned.replaceAll(',', '.');
-      return double.tryParse(normalized);
-    }
+  // Tách theo 'x', 'X' hoặc '×'
+  final parts = raw.split(RegExp(r'[xX×]')).map((e) => e.trim()).toList();
+  if (parts.length < 2) return null;
 
-    final daiMm = parseMm(parts[0]);
-    final rongMm = parseMm(parts[1]);
-
-    if (daiMm == null || rongMm == null) return null;
-
-    // mm -> m (chia 1000), rồi nhân lại để ra m2
-    final daiM = daiMm / 1000.0;
-    final rongM = rongMm / 1000.0;
-    return daiM * rongM;
+  // Loại bỏ ký tự không phải số, chấm, phẩy
+  double? parseMm(String s) {
+    final cleaned = s.replaceAll(RegExp(r'[^0-9,\.]'), '');
+    final normalized = cleaned.replaceAll(',', '.'); // đổi "2,5" -> "2.5"
+    return double.tryParse(normalized);
   }
+
+  final daiMm = parseMm(parts[0]);
+  final rongMm = parseMm(parts[1]);
+
+  if (daiMm == null || rongMm == null) return null;
+
+  // Tìm vật tư tấm pin để lấy số lượng
+  final vtTamPin = _findVatTuByGroupCode('TAM_PIN');
+  final num soLuongRaw = vtTamPin?.soLuong ?? 1;
+  final double soLuong =
+      soLuongRaw <= 0 ? 1 : soLuongRaw.toDouble(); // fallback
+
+  // Đổi mm -> m
+  final daiM = daiMm / 1000.0;
+  final rongM = rongMm / 1000.0;
+
+  // Kết quả diện tích
+  final area = daiM * rongM * soLuong;
+
+  // Làm tròn chữ số thập phân
+  return area.ceilToDouble();
+}
+
 
   List<VatTuTronGoi> get mainVisibleVatTus {
     // Thứ tự ưu tiên hiển thị: Tấm pin -> Biến tần -> Pin lưu trữ
@@ -255,7 +275,7 @@ extension TronGoiComputed on TronGoiBase {
     final csBienTan = congSuatBienTan;
     final kichThuocText = kichThuocTamPinText;
     final areaM2 = dienTichTamPinM2;
-
+    final luuTruKwh = dungLuongLuuTruKwh;
     return TronGoiDetailData(
       imageUrl: image,
       comboName: name,
@@ -270,6 +290,7 @@ extension TronGoiComputed on TronGoiBase {
       congSuatBienTan: csBienTan,
       kichThuocTamPinText: kichThuocText,
       dienTichTamPinM2: areaM2,
+      dungLuongLuuTruKwh: luuTruKwh,
     );
   }
 
@@ -300,6 +321,10 @@ extension TronGoiComputed on TronGoiBase {
       final congNgheAttr = vatTu.duLieuRieng['cong_nghe'];
       final String technologyText = congNgheAttr?.giaTri?.toString() ?? '';
       final String groupCode = vatTu.nhomVatTu?.ma ?? '';
+
+      final dungLuongAttr = vatTu.duLieuRieng['dung_luong'];
+      final String capacityText = dungLuongAttr?.giaTri?.toString() ?? '';
+
       return ProductDeviceModel(
         id: vatTu.id, // nếu model có field id
         image: imageUrl,
@@ -310,6 +335,7 @@ extension TronGoiComputed on TronGoiBase {
         price: priceText,
         power: powerText,
         technology: technologyText,
+        capacity: capacityText,
       );
     }).toList();
   }

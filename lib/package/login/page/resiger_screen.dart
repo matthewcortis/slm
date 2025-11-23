@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../routes.dart';
-
+import '../../api/api_service.dart'; // THÊM DÒNG NÀY
+import '../../utils/location_region_service.dart';
 class LoginWithRegisterScreen extends StatefulWidget {
   const LoginWithRegisterScreen({super.key});
 
@@ -12,6 +13,7 @@ class LoginWithRegisterScreen extends StatefulWidget {
 
 class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
   bool _obscure = true;
+  bool _isLoading = false; // trạng thái loading
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController(); // Họ tên
@@ -25,14 +27,66 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
     _passController.dispose();
     super.dispose();
   }
+Future<void> _handleRegister() async {
+  FocusScope.of(context).unfocus();
 
-  void _handleRegister() {
-    FocusScope.of(context).unfocus();
+  if (!_formKey.currentState!.validate()) return;
 
-    if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacementNamed(context, '/bottom-nav');
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    // >>> LẤY MÃ CƠ SỞ TỰ ĐỘNG
+    String region = await LocationRegionService.getUserRegionVN();
+    if (region == "Không xác định") {
+      region = "HN";
+    }
+
+    final body = {
+      "sdt": _userController.text.trim(),
+      "matKhau": _passController.text.trim(),
+      "hoVaTen": _nameController.text.trim(),
+      "maCoSo": region,
+    };
+
+    final res =
+        await ApiService.post("/basic-api/nguoi-dung/register", body);
+
+    if (res is Map &&
+        (res['status'] == 200 || res['success'] == true)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đăng ký thành công')),
+        );
+        Navigator.pushReplacementNamed(context, '/bottom-nav');
+      }
+    } else {
+      final msg = (res is Map && res['message'] != null)
+          ? res['message'].toString()
+          : 'Đăng ký không thành công.';
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi kết nối: $e')),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -50,18 +104,19 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
       backgroundColor: const Color(0xFFF8F8F8),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: SizedBox(
-            height: screenH,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: screenH),
             child: Form(
               key: _formKey,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  /// Nút back góc trái trên cùng
-                  Positioned(
-                    top: 16 * scaleH,
-                    left: 16 * scaleW,
-                    child: GestureDetector(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16 * scaleW),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 16 * scaleH),
+
+                    /// Nút back góc trái trên cùng
+                    GestureDetector(
                       onTap: () {
                         Navigator.pushReplacementNamed(
                           context,
@@ -91,13 +146,11 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                         ),
                       ),
                     ),
-                  ),
 
-                  // Hình illustration
-                  Positioned(
-                    top: 86 * scaleH,
-                    left: 16 * scaleW,
-                    child: SizedBox(
+                    SizedBox(height: 30 * scaleH),
+
+                    // Hình illustration
+                    SizedBox(
                       width: 398 * scaleW,
                       height: 310 * scaleH,
                       child: SvgPicture.asset(
@@ -105,17 +158,14 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                         fit: BoxFit.contain,
                       ),
                     ),
-                  ),
 
-                  Positioned(
-                    top: (135 + 310 + 24) * scaleH,
-                    left: 16 * scaleW,
-                    child: SizedBox(
+                    SizedBox(height: 24 * scaleH),
+
+                    // Tiêu đề
+                    SizedBox(
                       width: 398 * scaleW,
-                      height: 58 * scaleH,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
- 
                         children: const [
                           Text(
                             'Đăng ký',
@@ -127,6 +177,7 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                               color: Color(0xFF4F4F4F),
                             ),
                           ),
+                          SizedBox(height: 4),
                           Text(
                             'Nhập thông tin để tạo tài khoản mới.',
                             style: TextStyle(
@@ -140,15 +191,12 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                         ],
                       ),
                     ),
-                  ),
 
-                  /// --- Ô Họ tên ---
-                  Positioned(
-                    top: 510 * scaleH,
-                    left: 16 * scaleW,
-                    child: SizedBox(
+                    SizedBox(height: 24 * scaleH),
+
+                    /// --- Ô Họ tên ---
+                    SizedBox(
                       width: 398 * scaleW,
-                      height: 76 * scaleH,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -228,15 +276,12 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                         ],
                       ),
                     ),
-                  ),
 
-                  /// --- Ô Tên đăng nhập ---
-                  Positioned(
-                    top: 600 * scaleH,
-                    left: 16 * scaleW,
-                    child: SizedBox(
+                    SizedBox(height: 16 * scaleH),
+
+                    /// --- Ô Tên đăng nhập ---
+                    SizedBox(
                       width: 398 * scaleW,
-                      height: 76 * scaleH,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -302,8 +347,12 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                                       color: const Color(0xFF1A1A1A),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
                                         return 'Vui lòng nhập tài khoản';
+                                      }
+                                      if (value.trim().length < 9) {
+                                        return 'Số điện thoại không hợp lệ';
                                       }
                                       return null;
                                     },
@@ -315,15 +364,12 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                         ],
                       ),
                     ),
-                  ),
 
-                  /// --- Ô Mật khẩu ---
-                  Positioned(
-                    top: 690 * scaleH,
-                    left: 16 * scaleW,
-                    child: SizedBox(
+                    SizedBox(height: 16 * scaleH),
+
+                    /// --- Ô Mật khẩu ---
+                    SizedBox(
                       width: 398 * scaleW,
-                      height: 76 * scaleH,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -389,8 +435,12 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                                       color: const Color(0xFF1A1A1A),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
                                         return 'Vui lòng nhập mật khẩu';
+                                      }
+                                      if (value.trim().length < 3) {
+                                        return 'Mật khẩu tối thiểu 3 ký tự';
                                       }
                                       return null;
                                     },
@@ -417,23 +467,15 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                         ],
                       ),
                     ),
-                  ),
 
-                  /// --- Vị trí hiển thị lỗi (giờ để trống cho đúng layout) ---
-                  const Positioned(
-                    top: 770, // nhân scaleH nếu cần chính xác
-                    child: SizedBox.shrink(),
-                  ),
+                    SizedBox(height: 32 * scaleH),
 
-                  /// --- Nút Đăng ký ---
-                  Positioned(
-                    top: 800 * scaleH,
-                    left: 16 * scaleW,
-                    child: SizedBox(
+                    /// --- Nút Đăng ký ---
+                    SizedBox(
                       width: 398 * scaleW,
                       height: 48 * scaleH,
                       child: GestureDetector(
-                        onTap: _handleRegister,
+                        onTap: _isLoading ? null : _handleRegister,
                         child: Container(
                           decoration: BoxDecoration(
                             color: const Color(0xFFEE4037),
@@ -447,22 +489,35 @@ class _LoginWithRegisterScreenState extends State<LoginWithRegisterScreen> {
                             ],
                           ),
                           child: Center(
-                            child: Text(
-                              'Đăng ký',
-                              style: TextStyle(
-                                fontFamily: 'SF Pro Display',
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16 * scaleW,
-                                height: 20 / 16,
-                                color: Colors.white,
-                              ),
-                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(
+                                              Colors.white),
+                                    ),
+                                  )
+                                : Text(
+                                    'Đăng ký',
+                                    style: TextStyle(
+                                      fontFamily: 'SF Pro Display',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16 * scaleW,
+                                      height: 20 / 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+
+                    SizedBox(height: 24 * scaleH),
+                  ],
+                ),
               ),
             ),
           ),

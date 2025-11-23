@@ -126,27 +126,41 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
                   // ===================== TẤM PIN =====================
                   OptionCard(
                     title: 'Tấm quang năng',
-                    items: panels.map((item) {
-                      final vt = item.vatTu;
-                      return SolarMaxCartCard(
-                        image: const AssetImage('assets/images/product.png'),
-                        title: vt.ten,
-                        modeTag: widget.selectedType ?? '',
-                        congSuat:
-                            vt.duLieuRieng['cong_suat']?.giaTri.toString() ??
-                            '',
-                        chiSoIp: vt.duLieuRieng['ip']?.giaTri.toString() ?? '',
-                        khoiLuong:
-                            vt.duLieuRieng['khoi_luong']?.giaTri.toString() ??
-                            '',
-                        baoHanh: item.gm != null ? '${item.gm} tháng' : '',
-                        priceText: '${item.gia} đ',
-                        quantity: item.soLuong.toInt(), // <== ép int
-                        onIncrease: () {},
-                        onDecrease: () {},
-                        // showQuantityControl: true,            // nếu cần bật/tắt
-                      );
-                    }).toList(),
+                    items: panels
+                        .where(
+                          (item) => item.vatTu != null,
+                        ) // lọc bỏ item không có vật tư
+                        .map((item) {
+                          final vt = item.vatTu;
+                          final duLieu = vt.duLieuRieng;
+                          String getField(String key) {
+                            final raw = duLieu is Map<String, dynamic>
+                                ? duLieu[key]
+                                : null;
+                            if (raw == null) return '';
+                            if (raw is Map && raw['giaTri'] != null) {
+                              return raw['giaTri'].toString();
+                            }
+                            return raw.toString();
+                          }
+
+                          return SolarMaxCartCard(
+                            image: const AssetImage(
+                              'assets/images/product.png',
+                            ),
+                            title: vt.ten ?? '', // String? -> String
+                            modeTag: widget.selectedType ?? '',
+                            congSuat: getField('cong_suat'),
+                            chiSoIp: getField('ip'),
+                            khoiLuong: getField('khoi_luong'),
+                            baoHanh: item.gm != null ? '${item.gm} tháng' : '',
+                            priceText: (item.gia ?? 0).toString(), // tránh null
+                            quantity: (item.soLuong ?? 0).toInt(),
+                            onIncrease: () {},
+                            onDecrease: () {},
+                          );
+                        })
+                        .toList(),
                     onChange: () {
                       _openProductBottomSheet(
                         context,
@@ -160,22 +174,33 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
                   // ===================== BIẾN TẦN =====================
                   OptionCard(
                     title: 'Biến tần',
-                    items: inverters.map((item) {
+                    items: inverters.where((item) => item.vatTu != null).map((
+                      item,
+                    ) {
                       final vt = item.vatTu;
+                      final duLieu = vt.duLieuRieng;
+
+                      String getField(String key) {
+                        final raw = duLieu is Map<String, dynamic>
+                            ? duLieu[key]
+                            : null;
+                        if (raw == null) return '';
+                        if (raw is Map && raw['giaTri'] != null) {
+                          return raw['giaTri'].toString();
+                        }
+                        return raw.toString();
+                      }
+
                       return SolarMaxCartCard(
                         image: const AssetImage('assets/images/product.png'),
-                        title: vt.ten,
+                        title: vt.ten ?? '',
                         modeTag: widget.selectedType ?? '',
-                        congSuat:
-                            vt.duLieuRieng['cong_suat']?.giaTri.toString() ??
-                            '',
-                        chiSoIp: vt.duLieuRieng['ip']?.giaTri.toString() ?? '',
-                        khoiLuong:
-                            vt.duLieuRieng['khoi_luong']?.giaTri.toString() ??
-                            '',
+                        congSuat: getField('cong_suat'),
+                        chiSoIp: getField('ip'),
+                        khoiLuong: getField('khoi_luong'),
                         baoHanh: item.gm != null ? '${item.gm} tháng' : '',
-                        priceText: '${item.gia} đ',
-                        quantity: item.soLuong.toInt(),
+                        priceText: (item.gia ?? 0).toString(),
+                        quantity: (item.soLuong ?? 0).toInt(),
                         onIncrease: () {},
                         onDecrease: () {},
                       );
@@ -193,22 +218,34 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
                   // ===================== PIN LƯU TRỮ =====================
                   OptionCard(
                     title: 'Pin lưu trữ',
-                    items: batteries.map((item) {
+                    items: batteries.where((item) => item.vatTu != null).map((
+                      item,
+                    ) {
                       final vt = item.vatTu;
+                      final duLieu = vt.duLieuRieng;
+
+                      String getField(String key) {
+                        final raw = duLieu is Map<String, dynamic>
+                            ? duLieu[key]
+                            : null;
+                        if (raw == null) return '';
+                        if (raw is Map && raw['giaTri'] != null) {
+                          return raw['giaTri'].toString();
+                        }
+                        return raw.toString();
+                      }
+
                       return SolarMaxCartCard(
                         image: const AssetImage('assets/images/product.png'),
-                        title: vt.ten,
+                        title: vt.ten ?? '',
                         modeTag: widget.selectedType ?? '',
-                        congSuat:
-                            vt.duLieuRieng['dung_luong']?.giaTri.toString() ??
-                            '',
-                        chiSoIp: '', // nếu cần có thì lấy từ duLieuRieng
-                        khoiLuong:
-                            vt.duLieuRieng['khoi_luong']?.giaTri.toString() ??
-                            '',
+                        congSuat: getField('dung_luong'),
+                        chiSoIp:
+                            '', // nếu có trường ip riêng thì getField('ip')
+                        khoiLuong: getField('khoi_luong'),
                         baoHanh: item.gm != null ? '${item.gm} tháng' : '',
-                        priceText: '${item.gia} đ',
-                        quantity: item.soLuong.toInt(),
+                        priceText: (item.gia ?? 0).toString(),
+                        quantity: (item.soLuong ?? 0).toInt(),
                         onIncrease: () {},
                         onDecrease: () {},
                       );

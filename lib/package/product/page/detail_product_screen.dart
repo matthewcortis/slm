@@ -53,7 +53,6 @@ class DetailProduct extends StatelessWidget {
           final detail = tronGoi.toDetailData();
           final deviceProducts = tronGoi.mainDeviceProducts;
 
-     
           String showingTime = tronGoi.showingTime ?? 'Đang cập nhật';
 
           return Stack(
@@ -71,17 +70,23 @@ class DetailProduct extends StatelessWidget {
                       title: detail.comboName,
                       priceText: AppUtils.formatVNDNUM(detail.totalPrice),
                       description: detail.description,
-                     
                     ),
-                    const SizedBox(height: 10),
                     ComboDetailInfo(
-                      congSuatPV: '${detail.congSuatTamPin} kWp',
-                      bienTan: '${detail.congSuatBienTan} kW',
-                      luuTru: '5.12 kWh',
+                      congSuatPV: detail.congSuatTamPin != null
+                          ? '${detail.congSuatTamPin} kWp'
+                          : '--',
+                      bienTan: detail.congSuatBienTan != null
+                          ? '${detail.congSuatBienTan} kW'
+                          : '--',
+                      luuTru: detail.dungLuongLuuTruKwh != null
+                          ? '${detail.dungLuongLuuTruKwh} kWh'
+                          : '--',
                       sanLuong:
                           '${detail.sanLuongMin} - ${detail.sanLuongMax} kWh/tháng',
                       hoanVon: showingTime,
-                      dienTich: '${detail.dienTichTamPinM2} m²',
+                      dienTich: detail.dienTichTamPinM2 != null
+                          ? '${detail.dienTichTamPinM2} m²'
+                          : '--',
                     ),
 
                     const SizedBox(height: 10),

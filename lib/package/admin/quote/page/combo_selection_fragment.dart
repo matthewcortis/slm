@@ -1,5 +1,4 @@
-// combo_selection_fragment.dart
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/equipment/card_item_product_hy_on.dart';
@@ -8,7 +7,7 @@ import '../../../combo/repository/nhom_tron_goi_repo.dart';
 import '../../../combo/model/nhom_tron_goi_model.dart';
 import '../../../combo/model/tron_goi_model.dart';
 import '../../../combo/repository/tron_goi_repo.dart';
-import '../../../model/tron_goi.dart';
+
 typedef OnComboSelectionChanged =
     void Function(bool hasSelection, Map<String, dynamic>? combo);
 

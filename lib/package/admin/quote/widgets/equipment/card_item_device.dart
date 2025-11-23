@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../quantity_control.dart';
 
 class SolarMaxCartCard extends StatelessWidget {
-  final ImageProvider image;
+  final ImageProvider image; // ĐỔI TỪ NetworkImage -> ImageProvider
   final String title;
   final String modeTag; // "Hy-Brid"
   final String congSuat;
@@ -15,7 +15,8 @@ class SolarMaxCartCard extends StatelessWidget {
   final VoidCallback? onDecrease;
 
   final bool showQuantityControl; // có hiện tăng/giảm hay không
-  final Color? backgroundColor; // màu nền cardF
+  final Color? backgroundColor; // màu nền card
+
   const SolarMaxCartCard({
     super.key,
     required this.image,
@@ -141,6 +142,7 @@ class _GradientBorderImage extends StatelessWidget {
     );
   }
 }
+
 
 class _RightContent extends StatelessWidget {
   final String title;

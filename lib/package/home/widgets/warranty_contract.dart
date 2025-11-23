@@ -1,9 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../repository/rarranty_repo.dart';
+import '../../model/hop_dong_bao_hanh_model.dart';
 
 class WarrantyContractCard extends StatelessWidget {
-  const WarrantyContractCard({super.key});
+    final int hopDongId;
+  const WarrantyContractCard({super.key, required this.hopDongId});
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +46,7 @@ class WarrantyContractCard extends StatelessWidget {
 
                 SizedBox(height: scale(12)),
 
-                /// ==== CONTENT FRAME ====
-                buildRow(
-                  title: "Mã hợp đồng",
-                  value: "SL-DA688",
-                  isCopy: true,
-                  scale: scale,
-                ),
+    
                 buildRow(
                   title: "Bên bán",
                   value: "CÔNG TY CỔ PHẦN ĐẦU TƯ SLM",
@@ -144,81 +141,174 @@ class WarrantyContractCard extends StatelessWidget {
     );
   }
 }
+class DetailInfoCard extends StatefulWidget {
+  final int hopDongId;
 
-class DetailInfoCard extends StatelessWidget {
-  const DetailInfoCard({super.key});
+  const DetailInfoCard({
+    super.key,
+    required this.hopDongId,
+  });
+
+  @override
+  State<DetailInfoCard> createState() => _DetailInfoCardState();
+}
+
+class _DetailInfoCardState extends State<DetailInfoCard> {
+  final _repo = WarrantyRepository();
+  late Future<HopDongBaoHanh?> _futureHopDong;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureHopDong = _repo.getHopDongById(widget.hopDongId);
+  }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     double scale(double v) => v * width / 430;
 
-    return Center(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Container(
-            width: scale(402),
-            padding: EdgeInsets.all(scale(16)),
-            decoration: BoxDecoration(
-              color: const Color(0x33F3F3F3),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFE0E0E0), 
-                width: 0.5,
+    return FutureBuilder<HopDongBaoHanh?>(
+      future: _futureHopDong,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: SizedBox(
+              width: scale(402),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Lỗi tải thông tin chi tiết',
+              style: TextStyle(
+                fontFamily: 'SFProDisplay',
+                fontSize: scale(14),
+                color: const Color(0xFFE53935),
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// ===== TITLE =====
-                Text(
-                  "Thông tin chi tiết",
-                  style: TextStyle(
-                    fontFamily: 'SFProDisplay',
-                    fontWeight: FontWeight.w600,
-                    fontSize: scale(18),
-                    height: 28 / 18,
-                    color: const Color(0xFF4F4F4F),
+          );
+        }
+
+        final hopDong = snapshot.data;
+        if (hopDong == null) {
+          return Center(
+            child: Text(
+              'Không tìm thấy hợp đồng',
+              style: TextStyle(
+                fontFamily: 'SFProDisplay',
+                fontSize: scale(14),
+                color: const Color(0xFF4F4F4F),
+              ),
+            ),
+          );
+        }
+
+        // Danh sách vật tư trong hợp đồng (VatTuHopDongBH)
+        final List<VatTuHopDongBH> allItems = hopDong.vatTuHopDongs;
+
+        // Lọc chỉ vật tư chính (nhomVatTu.vatTuChinh == true)
+        final items = allItems.where((e) {
+          final nhom = e.vatTu?.nhomVatTu;
+          return nhom != null && nhom.vatTuChinh == true;
+        }).toList();
+
+        if (items.isEmpty) {
+          return Center(
+            child: Text(
+              'Chưa có thông tin vật tư',
+              style: TextStyle(
+                fontFamily: 'SFProDisplay',
+                fontSize: scale(14),
+                color: const Color(0xFF4F4F4F),
+              ),
+            ),
+          );
+        }
+
+        return Center(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: Container(
+                width: scale(402),
+                padding: EdgeInsets.all(scale(16)),
+                decoration: BoxDecoration(
+                  color: const Color(0x33F3F3F3),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFE0E0E0),
+                    width: 0.5,
                   ),
                 ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// ===== TITLE =====
+                    Text(
+                      "Thông tin chi tiết",
+                      style: TextStyle(
+                        fontFamily: 'SFProDisplay',
+                        fontWeight: FontWeight.w600,
+                        fontSize: scale(18),
+                        height: 28 / 18,
+                        color: const Color(0xFF4F4F4F),
+                      ),
+                    ),
 
-                SizedBox(height: scale(12)),
+                    SizedBox(height: scale(12)),
 
-                /// ===== CONTENT ROWS =====
-                buildItem(
-                  scale: scale,
-                  title: "Tấm Quang Năng",
-                  value: "PV JASolar | 580W | 1 mặt kính",
-                  quantity: "10 tấm",
-                  isLast: false,
+                    /// ===== CÁC DÒNG VẬT TƯ =====
+                    ..._buildVatTuRows(items, scale),
+                  ],
                 ),
-                buildItem(
-                  scale: scale,
-                  title: "Biến tần",
-                  value: "Solis Hybrid 5kW | 1 pha",
-                  quantity: "01 bộ",
-                ),
-                buildItem(
-                  scale: scale,
-                  title: "Pin lưu trữ",
-                  value: "Pin Lithium Dyness | 5kWh | Bản xếp tầng",
-                  quantity: "02 cái",
-                ),
-                buildItem(
-                  scale: scale,
-                  title: "Phụ kiện, vật tư",
-                  value: "Tủ điện NLMT SolarMax",
-                  quantity: "01 bộ",
-                  isLast: true,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
+
+  List<Widget> _buildVatTuRows(
+    List<VatTuHopDongBH> items,
+    double Function(double) scale,
+  ) {
+    final List<Widget> widgets = [];
+
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+      final vatTu = item.vatTu;
+      final nhom = vatTu?.nhomVatTu;
+
+      // Tên nhóm: "Tấm Quang Năng", "Biến tần", ...
+      final String title = nhom?.ten ?? 'Vật tư';
+
+      // Tên vật tư: "PV JASolar | 580W | 1 mặt kính", ...
+      final String value = vatTu?.ten ?? '';
+
+      // Thời gian bảo hành X tháng
+      final String duration =
+          item.thoiGianBaoHanh != null && item.thoiGianBaoHanh! > 0
+              ? '${item.thoiGianBaoHanh} tháng'
+              : '';
+
+      widgets.add(
+        buildItem(
+          scale: scale,
+          title: title,
+          value: value,
+          quantity: duration,
+          isLast: i == items.length - 1,
+        ),
+      );
+    }
+
+    return widgets;
   }
 
   /// === ONE ROW ITEM ===
@@ -276,14 +366,14 @@ class DetailInfoCard extends StatelessWidget {
             ),
           ),
 
-          /// RIGHT (Số lượng + value)
+          /// RIGHT (Thời gian BH)
           Expanded(
             flex: 1,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "Số lượng",
+                  "Thời gian BH",
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     fontFamily: 'SFProDisplay',

@@ -184,19 +184,25 @@ class _SelectProductSheetBodyState extends State<_SelectProductSheetBody> {
               itemBuilder: (context, index) {
                 final p = _products[index];
                 return SolarMaxCartCard(
-                  image: const AssetImage('assets/images/product.png'),
-                  title: p['title']!,
-                  modeTag: p['mode']!,
-                  congSuat: p['congSuat']!,
-                  chiSoIp: p['ip']!,
-                  khoiLuong: p['khoiLuong']!,
-                  baoHanh: p['baoHanh']!,
-                  priceText: p['price']!,
+                  image:
+                      (p['image'] != null &&
+                          p['image'].toString().isNotEmpty &&
+                          p['image'].toString().startsWith('http'))
+                      ? NetworkImage(p['image']!)
+                      : const AssetImage('assets/images/product.png'),
+
+                  title: p['title'] ?? '',
+                  modeTag: p['mode'] ?? '',
+                  congSuat: p['congSuat'] ?? '',
+                  chiSoIp: p['ip'] ?? '',
+                  khoiLuong: p['khoiLuong'] ?? '',
+                  baoHanh: p['baoHanh'] ?? '',
+                  priceText: p['price'] ?? '',
                   quantity: 1,
-                  showQuantityControl: false, // không hiện tăng/giảm
-                  backgroundColor: Colors.white, // nền trắng giống Figma
-                  onIncrease: null,
-                  onDecrease: null,
+                  showQuantityControl: false,
+                  backgroundColor: Colors.white,
+                  onIncrease: () {},
+                  onDecrease: () {},
                 );
               },
             ),

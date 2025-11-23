@@ -56,12 +56,6 @@ class ProfileHeader extends StatelessWidget {
                   height: scale(96),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: avatarUrl.startsWith('http')
-                          ? NetworkImage(avatarUrl)
-                          : AssetImage(avatarUrl) as ImageProvider,
-                      fit: BoxFit.cover,
-                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
@@ -69,6 +63,25 @@ class ProfileHeader extends StatelessWidget {
                         offset: const Offset(0, 4),
                       ),
                     ],
+                  ),
+                  child: ClipOval(
+                    child: avatarUrl.isNotEmpty && avatarUrl.startsWith('http')
+                        ? Image.network(
+                            avatarUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/images/avatar.jpg',
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          )
+                        : Image.asset(
+                            avatarUrl.isNotEmpty
+                                ? avatarUrl
+                                : 'assets/images/avatar.jpg',
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
 

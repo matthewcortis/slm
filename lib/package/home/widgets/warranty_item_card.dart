@@ -28,12 +28,7 @@ class WarrantyItemCard extends StatelessWidget {
 
     return Container(
       width: scale(402),
-      padding: EdgeInsets.fromLTRB(
-        scale(16), 
-        scale(8), 
-        scale(16),
-        scale(8), 
-      ),
+      padding: EdgeInsets.fromLTRB(scale(16), scale(8), scale(16), scale(8)),
       decoration: BoxDecoration(
         color: const Color(0x33B5B5B5),
         borderRadius: BorderRadius.circular(20),
@@ -53,11 +48,31 @@ class WarrantyItemCard extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: Image.asset(
-                        image,
+                      child: Image.network(
+                        image, // đây là link ảnh từ API
                         width: scale(74),
                         height: scale(74),
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/images/product.png', // ảnh fallback trong assets
+                            width: scale(74),
+                            height: scale(74),
+                            fit: BoxFit.cover,
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: SizedBox(
+                              width: scale(24),
+                              height: scale(24),
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     Positioned.fill(
@@ -96,9 +111,8 @@ class WarrantyItemCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       /// Status Tag
-                      /// 
+                      ///
                       _buildStatusTag(scale, statusText),
-                     
 
                       SizedBox(height: scale(4)),
 

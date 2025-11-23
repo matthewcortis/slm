@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../widgets/equipment/equipment_selection.dart';
 import '../widgets/equipment/equipment_list.dart';
 import '../../../combo/model/tron_goi_model.dart';
-import '../../../product/model/combo_detail.dart';
 class DanhMucScreen extends StatefulWidget {
   final String? selectedType;
   final String? selectedPhase;
@@ -25,7 +24,6 @@ class _DanhMucScreenState extends State<DanhMucScreen> {
   @override
   void initState() {
     super.initState();
-    // Kiểm tra xem đã nhận đúng comboId từ bước 2 chưa
     print("Combo ID step 3 = ${widget.comboId}");
     print("TronGoi ID step 3 = ${widget.tronGoi.id}");
   }

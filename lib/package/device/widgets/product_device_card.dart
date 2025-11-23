@@ -56,12 +56,27 @@ class ProductDeviceCard extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.topLeft,
                 children: [
-                  Image.asset(
+                  Image.network(
                     product.image,
                     width: scale(167),
                     height: scale(167),
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'assets/images/product.png', // ảnh fallback
+                        width: scale(167),
+                        height: scale(167),
+                        fit: BoxFit.cover,
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      );
+                    },
                   ),
+
                   Container(
                     width: scale(167),
                     height: scale(167),

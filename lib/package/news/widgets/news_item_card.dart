@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/bai_viet_model.dart';
 import '../../utils/app_utils.dart';
-
+import '../../../routes.dart';
 class NewsCardCard extends StatelessWidget {
   final dynamic news;
 
@@ -23,7 +23,22 @@ class NewsCardCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed('/detail-news', arguments: news);
+        if (isApi) {
+          // Dữ liệu từ API: BaiVietModel -> truyền id sang màn chi tiết
+          final BaiVietModel article = news as BaiVietModel;
+          Navigator.of(context).pushNamed(
+            AppRoutes.detailNewsScreen,
+            arguments: article.id,
+          );
+        } else {
+          // Dữ liệu local (FAQ, hướng dẫn, v.v.)
+          // Tuỳ bạn xử lý: có thể mở màn chi tiết khác hoặc dùng cùng màn chi tiết
+          // Ví dụ: nếu local cũng có field id thì:
+          // Navigator.of(context).pushNamed(
+          //   AppRoutes.detailNewsScreen,
+          //   arguments: news.id,
+          // );
+        }
       },
       child: Center(
         child: Container(
@@ -85,6 +100,14 @@ class NewsCardCard extends StatelessWidget {
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.cover,
+                        ),
+                      if ((imageUrl == null || imageUrl.isEmpty) &&
+                          imageAsset == null)
+                        Container(
+                          color: const Color(0xFFE6E6E6),
+                          child: const Center(
+                            child: Icon(Icons.image_not_supported),
+                          ),
                         ),
                       Container(
                         width: double.infinity,
