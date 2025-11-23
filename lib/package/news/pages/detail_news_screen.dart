@@ -96,24 +96,24 @@ class _DetailNewsScreenState extends State<DetailNewsScreen> {
             const SizedBox(height: 10),
 
             // ===== Tin tức liên quan =====
-            FutureBuilder<List<ProductDeviceModel>>(
-              future: productNews,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return const Center(
-                    child: Text('Lỗi khi tải dữ liệu'),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('Không có sản phẩm liên quan'));
-                } else {
-                  return Center(
-                    child: RelatedNewsSection(productsDevice: snapshot.data!),
-                  );
-                }
-              },
-            ),
+            // FutureBuilder<List<ProductDeviceModel>>(
+            //   future: productNews,
+            //   builder: (context, snapshot) {
+            //     if (snapshot.connectionState == ConnectionState.waiting) {
+            //       return const Center(child: CircularProgressIndicator());
+            //     } else if (snapshot.hasError) {
+            //       return const Center(
+            //         child: Text('Lỗi khi tải dữ liệu'),
+            //       );
+            //     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            //       return const Center(child: Text('Không có sản phẩm liên quan'));
+            //     } else {
+            //       return Center(
+            //         child: RelatedNewsSection(productsDevice: snapshot.data!),
+            //       );
+            //     }
+            //   },
+            // ),
           ],
         ),
       ),

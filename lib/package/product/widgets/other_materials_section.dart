@@ -1,36 +1,43 @@
 import 'package:flutter/material.dart';
+import '../../model/tron_goi.dart'; 
 
 class OtherMaterialsSection extends StatelessWidget {
-  const OtherMaterialsSection({super.key});
+  final List<VatTuTronGoi> materials;
+
+  const OtherMaterialsSection({super.key, required this.materials});
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     double scale(double v) => v * width / 430;
 
-    final List<Map<String, String>> materials = [
-      {
-        'name': 'Hệ khung giá đỡ nhôm chất liệu A6005-T6 cao cấp',
-        'warranty': '5 năm',
-        'quantity': '1',
-      },
-      {
-        'name': 'Hệ dây điện kết nối hệ thống',
-        'warranty': '5 năm',
-        'quantity': '1',
-      },
-      {'name': 'Hệ tiếp địa', 'warranty': '5 năm', 'quantity': '1'},
-      {
-        'name': 'Trọn gói vật tư phụ lắp đặt',
-        'warranty': '5 năm',
-        'quantity': '1',
-      },
-      {
-        'name': 'Trọn gói nhân công lắp đặt',
-        'warranty': '5 năm',
-        'quantity': '1',
-      },
-    ];
+
+    String _formatQuantity(num? q) {
+      if (q == null) return '-';
+      if (q % 1 == 0) return q.toInt().toString();
+      return q.toString();
+    }
+
+    String _formatWarranty(VatTuTronGoi item) {
+      if (item.duocBaoHanh != true) {
+        return 'Không bảo hành';
+      }
+
+      final gm = item.gm?.toInt();
+      if (gm == null) {
+        return 'Có bảo hành';
+      }
+      final years = gm ~/ 12;
+      final months = gm % 12;
+
+      if (years > 0 && months > 0) {
+        return '$years năm $months tháng';
+      } else if (years > 0) {
+        return '$years năm';
+      } else {
+        return '$months tháng';
+      }
+    }
 
     return Container(
       width: scale(430),
@@ -58,7 +65,7 @@ class OtherMaterialsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- Header: "Vật tư khác" + "4 vật tư" ---
+          // --- Header: "Vật tư khác" + "{n} vật tư" ---
           Row(
             children: [
               Text(
@@ -112,10 +119,10 @@ class OtherMaterialsSection extends StatelessWidget {
                     'Tên thiết bị',
                     style: TextStyle(
                       fontFamily: 'SFProDisplay',
-                      fontWeight: FontWeight.w400, // Regular
+                      fontWeight: FontWeight.w400,
                       fontSize: scale(14),
                       height: 20 / 14,
-                      color: const Color(0xFF848484), // var(--Gray-G4)
+                      color: const Color(0xFF848484),
                     ),
                   ),
                 ),
@@ -154,21 +161,28 @@ class OtherMaterialsSection extends StatelessWidget {
           // --- Danh sách vật tư ---
           ListView.separated(
             padding: EdgeInsets.zero,
-            shrinkWrap: true, // ✅ Tự co theo nội dung
-            physics: const NeverScrollableScrollPhysics(), // ✅ Không cuộn riêng
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             itemCount: materials.length,
             separatorBuilder: (_, __) =>
                 const Divider(height: 1, color: Color(0xFFE0E0E0)),
             itemBuilder: (context, index) {
               final item = materials[index];
+              final vatTu = item.vatTu;
+
+              final name = vatTu.ten;
+              final warranty = _formatWarranty(item);
+              final quantity = _formatQuantity(item.soLuong);
+
               return Padding(
                 padding: EdgeInsets.symmetric(vertical: scale(8)),
                 child: Row(
                   children: [
+                    // Tên thiết bị
                     Expanded(
                       flex: 6,
                       child: Text(
-                        item['name']!,
+                        name,
                         style: TextStyle(
                           fontFamily: 'SFProDisplay',
                           fontWeight: FontWeight.w400,
@@ -178,10 +192,11 @@ class OtherMaterialsSection extends StatelessWidget {
                         ),
                       ),
                     ),
+                    // Bảo hành
                     Expanded(
                       flex: 2,
                       child: Text(
-                        item['warranty']!,
+                        warranty,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'SFProDisplay',
@@ -192,10 +207,11 @@ class OtherMaterialsSection extends StatelessWidget {
                         ),
                       ),
                     ),
+                    // Số lượng
                     Expanded(
                       flex: 2,
                       child: Text(
-                        item['quantity']!,
+                        quantity,
                         textAlign: TextAlign.right,
                         style: TextStyle(
                           fontFamily: 'SFProDisplay',

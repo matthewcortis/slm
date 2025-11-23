@@ -3,14 +3,19 @@ import '../../home/services/product_category_model.dart';
 import '../services/load_product.dart';
 import '../widgets/app_bar_home.dart';
 import '../widgets/list_product.dart';
-import '../../news/services/load_faq.dart';
-import '../../news/services/load_tutorial.dart';
-import '../../model/faq_model.dart';
-import '../../model/tutorial_model.dart';
 import '../widgets/warranty_price.dart';
 import '../widgets/bank_contract_info.dart';
 import '../../controllers/login/auth_storage.dart';
 import '../../../routes.dart';
+import '../model/tron_goi_hot.dart';
+import '../repository/hot_combo_repo.dart';
+import '../../news/pages/news_screen.dart';
+import './customer_screen.dart';
+import '../repository/hop_dong_repo.dart';
+import '../repository/khach_hang_repo.dart';
+import '../../model/hop_dong_model.dart';
+import '../../utils/app_utils.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -20,29 +25,52 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final Future<ProductCategoryModel> _futureProducts;
-  late final Future<List<FAQModel>> _futureFAQ;
-  late final Future<List<TutorialModel>> _futureTutorial;
+
+  final HopDongRepository _hopDongRepository = HopDongRepository();
+  late Future<List<HopDongModel>> _futureHopDong;
+
+  late final Future<List<TronGoiBanChayModel>> _futureBestSeller;
+  final TronGoiRepository _tronGoiRepository = TronGoiRepository();
+
+  final repo = KhachHangRepository();
 
   String? userRole;
+  String? bankNameFromAuth;
+  String? bankAccountFromAuth;
+  String? fullName;
+  String? avatarUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTM9VGV6Xyj-5_ZyotLIuuTGTfLHe0f2w44rQ&s';
 
   @override
   void initState() {
     super.initState();
+
     _futureProducts = loadAllProducts();
-    _futureFAQ = loadFAQ();
-    _futureTutorial = loadTutorial();
+    _futureBestSeller = _tronGoiRepository.getDanhSachBanChay();
+    _futureHopDong = _hopDongRepository.getHopDongCuaUserDangNhap();
+
     _loadRole();
+    _loadBankInfo();
   }
 
   Future<void> _loadRole() async {
-    final role = await AuthStorage.getRole(); // cần thêm hàm này trong AuthStorage
+    final role = await AuthStorage.getRole();
+    debugPrint('HomeScreen _loadRole -> $role');
     setState(() {
-      userRole = role; // null = khách vãng lai
+      userRole = role;
     });
+  }
+
+  Future<void> _loadBankInfo() async {
+    bankNameFromAuth = await AuthStorage.getBankName();
+    bankAccountFromAuth = await AuthStorage.getBankAccount();
+    fullName = await AuthStorage.getFullName();
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('HomeScreen build userRole = $userRole');
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
       body: FutureBuilder<ProductCategoryModel>(
@@ -52,42 +80,152 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final categoryData = snapshot.data!;
-          final hotProducts = categoryData.hotProducts;
-          final deviceProducts = categoryData.deviceProducts;
-
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 32),
               child: Column(
                 children: [
-                  const SolarHeaderFullCard(),
+                  // Header tổng
+                  SolarHeaderFullCard(
+                    userName: fullName ?? 'Không tên',
+                    roleTitle: AppUtils().mapRoleToDisplay(userRole),
+                    avatarImage: (avatarUrl != null && avatarUrl!.isNotEmpty)
+                        ? NetworkImage(avatarUrl!)
+                        : const AssetImage('assets/images/avatar.jpg'),
+                    roleCode: userRole,
+                  ),
                   const SizedBox(height: 24),
 
-                  if (userRole == null) ...[
+                  if (userRole == null || userRole == "guest") ...[
                     const SizedBox.shrink(),
                   ] else if (userRole == "customer") ...[
                     ContractValueCard(
                       deliveryDate: "12/03/2025",
                       totalValue: "12.650.000 đ",
                       onView: () {
-                        Navigator.of(context).pushNamed(AppRoutes.warrantyDeviceScreen);
+                        Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.warrantyDeviceScreen);
                       },
                     ),
-                  ] else if (userRole == "admin" || userRole == "staff") ...[
-                    const BankContractCard(),
+                  ] else if (userRole == "admin" ||
+                      userRole == "sale" ||
+                      userRole == "agent") ...[
+                    // ADMIN, SALE, AGENT: luôn hiển thị BankContractCard
+                    FutureBuilder<List<HopDongModel>>(
+                      future: _futureHopDong,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          return Text('Lỗi tải hợp đồng: ${snapshot.error}');
+                        }
+
+                        final list = snapshot.data ?? [];
+
+                        // Có thể không có hợp đồng
+                        final HopDongModel? hopDong = list.isNotEmpty
+                            ? list.first
+                            : null;
+
+                        // Có thể không có người giới thiệu
+                        final nguoi = hopDong?.nguoiGioiThieu;
+
+                        // Ưu tiên lấy trong hợp đồng, nếu không có thì fallback sang dữ liệu login (AuthStorage)
+                        final bankName =
+                            (nguoi?.nganHang != null &&
+                                nguoi!.nganHang!.isNotEmpty)
+                            ? nguoi.nganHang!
+                            : (bankNameFromAuth ?? '');
+
+                        final accountNumber =
+                            (nguoi?.maNganHang != null &&
+                                nguoi!.maNganHang!.isNotEmpty)
+                            ? nguoi.maNganHang!
+                            : (bankAccountFromAuth ?? '');
+
+                        // Nếu không có hợp đồng -> ngày, giá trị, khách hàng, hoa hồng = mặc định
+                        final handoverDateText = hopDong?.taoLuc != null
+                            ? AppUtils.date(hopDong!.taoLuc)
+                            : '';
+
+                        final tongGia = hopDong?.tongGia ?? 0;
+                        final phanTram = nguoi?.phanTramHoaHong ?? 0;
+
+                        final totalContractValue = AppUtils.currency(
+                          tongGia * (phanTram / 100),
+                        );
+
+                        final customerCount = (nguoi?.khachHangs.length ?? 0)
+                            .toString();
+
+                        final totalCommission = AppUtils.currency(
+                          nguoi?.tongHoaHong ?? 0,
+                        );
+
+                        return BankContractCard(
+                          bankName: bankName,
+                          accountNumber: accountNumber,
+                          handoverDateText: handoverDateText,
+                          totalContractValue: totalContractValue,
+                          customerCount: customerCount,
+                          totalCommission: totalCommission,
+                          onTapCustomerList: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CustomerListScreen(
+                                  customersDisplay: repo
+                                      .getCustomersOfCurrentUser(),
+                                  totalCommission: totalCommission,
+                                  customerCount: customerCount,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ],
 
-                  const SizedBox(height: 24),
+                  // ================== END PHÂN QUYỀN ==================
+                  const SizedBox(height: 12),
 
-                  BestSellerSection(products: hotProducts),
-                  const SizedBox(height: 24),
+                  // Combo bán chạy
+                  FutureBuilder<List<TronGoiBanChayModel>>(
+                    future: _futureBestSeller,
+                    builder: (context, bestSnapshot) {
+                      if (bestSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (bestSnapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'Không thể tải combo bán chạy: ${bestSnapshot.error}',
+                          ),
+                        );
+                      }
 
-                  ProductDevice(
-                    products_device: deviceProducts,
-                    futureFAQ: _futureFAQ,
-                    futureTutorial: _futureTutorial,
+                      final bestSellers = bestSnapshot.data ?? [];
+                      if (bestSellers.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return BestSellerSection(combos: bestSellers);
+                    },
                   ),
+
+                  const SizedBox(height: 24),
+
+                  // Tin tức
+                  const NewsHomeHeader(),
+                  const NewsEmbeddedSection(height: 380),
                 ],
               ),
             ),

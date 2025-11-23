@@ -96,26 +96,9 @@ class WarrantyItemCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       /// Status Tag
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: scale(10),
-                          vertical: scale(2),
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0x332ECC71),
-                          borderRadius: BorderRadius.circular(100),
-                          border: Border.all(color: const Color(0xFF2ECC71)),
-                        ),
-                        child: Text(
-                          statusText,
-                          style: TextStyle(
-                            fontSize: scale(10),
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'SFProDisplay',
-                            color: const Color(0xFF2ECC71),
-                          ),
-                        ),
-                      ),
+                      /// 
+                      _buildStatusTag(scale, statusText),
+                     
 
                       SizedBox(height: scale(4)),
 
@@ -188,6 +171,34 @@ class WarrantyItemCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusTag(Function(double) scale, String trangThai) {
+    final hetHan = trangThai.toLowerCase().contains("đã hết hạn");
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: scale(8), vertical: scale(4)),
+      decoration: BoxDecoration(
+        color: hetHan ? const Color(0xFFFCEEE6) : const Color(0xFFEFFEF5),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(
+          color: hetHan
+              ? const Color(0xFFF8DECD)
+              : Colors.white.withOpacity(0.7),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        trangThai,
+        style: TextStyle(
+          fontFamily: 'SF Pro',
+          fontWeight: FontWeight.w400,
+          fontSize: scale(10),
+          height: 12 / 10,
+          color: hetHan ? const Color(0xFFDC5903) : const Color(0xFF0F974A),
         ),
       ),
     );

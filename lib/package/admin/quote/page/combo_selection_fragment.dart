@@ -1,52 +1,61 @@
 // combo_selection_fragment.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../widgets/equipment/card_item_product_hy_on.dart';
-import '../../../model/ProductModel.dart';
-import '../../../product/services/load_product.dart';
 
+import '../../../combo/repository/nhom_tron_goi_repo.dart';
+import '../../../combo/model/nhom_tron_goi_model.dart';
+import '../../../combo/model/tron_goi_model.dart';
+import '../../../combo/repository/tron_goi_repo.dart';
+import '../../../model/tron_goi.dart';
 typedef OnComboSelectionChanged =
     void Function(bool hasSelection, Map<String, dynamic>? combo);
 
 class ComboSelectionFragment extends StatefulWidget {
   const ComboSelectionFragment({super.key, required this.onSelectionChanged});
 
-  final OnComboSelectionChanged
-  onSelectionChanged; // true nếu có item được chọn
+  final OnComboSelectionChanged onSelectionChanged;
 
   @override
   State<ComboSelectionFragment> createState() => _ComboSelectionFragmentState();
 }
 
 class _ComboSelectionFragmentState extends State<ComboSelectionFragment> {
-  List<dynamic> combos = [];
-  Map<String, dynamic>? selectedCombo;
-
-  Future<void> loadCombos() async {
-    final jsonString = await rootBundle.loadString('assets/data/combos.json');
-    final data = json.decode(jsonString);
-    setState(() => combos = data['combos']);
-    // lúc mới vào chưa chọn gì
-    widget.onSelectionChanged(false, null);
-  }
+  final _repo = NhomTronGoiRepository();
+  late Future<List<NhomTronGoiModel>> _futureCombos;
+ 
+  NhomTronGoiModel? selectedCombo;
 
   @override
   void initState() {
     super.initState();
-    loadCombos();
+    _futureCombos = _repo.getAllNhomTronGoi();
+    // lúc mới vào chưa chọn gì
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onSelectionChanged(false, null);
+    });
   }
 
-  void _toggleSelect(Map<String, dynamic> combo) {
+  void _toggleSelect(NhomTronGoiModel combo) {
     setState(() {
-      if (selectedCombo?['id'] == combo['id']) {
-        selectedCombo = null; // đang chọn -> về mặc định
+      if (selectedCombo?.id == combo.id) {
+        selectedCombo = null; // đang chọn -> bỏ chọn
       } else {
         selectedCombo = combo; // chọn item mới
       }
     });
-    widget.onSelectionChanged(selectedCombo != null, selectedCombo);
+
+    if (selectedCombo != null) {
+      // Map trả ra giống cấu trúc cũ: id, text, icon
+      widget.onSelectionChanged(true, {
+        'id': selectedCombo!.id,
+        'text': selectedCombo!.ten,
+        'icon': 'assets/icons/file-validation.svg',
+      });
+    } else {
+      widget.onSelectionChanged(false, null);
+    }
   }
 
   @override
@@ -85,26 +94,63 @@ class _ComboSelectionFragmentState extends State<ComboSelectionFragment> {
         ),
         const SizedBox(height: 16),
 
+        // PHẦN GRIDVIEW GIỮ NGUYÊN GIAO DIỆN, CHỈ THAY DATA
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 191 / 110,
-            ),
-            itemCount: combos.length,
-            itemBuilder: (context, index) {
-              final combo = combos[index] as Map<String, dynamic>;
-              final isSelected = selectedCombo?['id'] == combo['id'];
-              return GestureDetector(
-                onTap: () => _toggleSelect(combo),
-                child: SelectableBrandCard(
-                  label: combo['text'] ?? '',
-                  iconPath: (combo['icon'] as String?)?.trim(),
-                  selected: isSelected,
+          child: FutureBuilder<List<NhomTronGoiModel>>(
+            future: _futureCombos,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text(
+                    'Lỗi tải dữ liệu nhóm trọn gói',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.red,
+                    ),
+                  ),
+                );
+              }
+
+              final combos = snapshot.data ?? [];
+              if (combos.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'Không có nhóm trọn gói',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF828282),
+                    ),
+                  ),
+                );
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 191 / 110,
                 ),
+                itemCount: combos.length,
+                itemBuilder: (context, index) {
+                  final combo = combos[index];
+                  final isSelected = selectedCombo?.id == combo.id;
+
+                  return GestureDetector(
+                    onTap: () => _toggleSelect(combo),
+                    child: SelectableBrandCard(
+                      label: combo.ten, // tương đương combo['text']
+                      iconPath:
+                          'assets/icons/file-validation.svg', // tương đương combo['icon']
+                      selected: isSelected,
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -113,7 +159,6 @@ class _ComboSelectionFragmentState extends State<ComboSelectionFragment> {
     );
   }
 }
-
 // Card như bạn đã có
 class SelectableBrandCard extends StatelessWidget {
   const SelectableBrandCard({
@@ -264,20 +309,21 @@ class _IconRadioRow extends StatelessWidget {
 }
 
 class ProductListScreen extends StatefulWidget {
-  final List<dynamic>? comboProducts;
+  final int nhomTronGoiId; // ID nhóm trọn gói truyền từ màn trước
   final String? comboName;
   final VoidCallback? onBack;
+
   final bool? initialIsHybrid;
   final void Function(String type, bool hasAny)? onTypeSelected;
-  final void Function(ProductHotModel? product)? onProductSelected;
+  final void Function(TronGoiModel? product)? onProductSelected;
 
   const ProductListScreen({
     super.key,
-    this.comboProducts,
+    required this.nhomTronGoiId,
     this.comboName,
     this.onBack,
-    this.onTypeSelected,
     this.initialIsHybrid,
+    this.onTypeSelected,
     this.onProductSelected,
   });
 
@@ -286,48 +332,76 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
-  late bool isHybridSelected; // <-- dùng late
+  late bool isHybridSelected;
   int? selectedIndex;
-  List<ProductHotModel> products = [];
+
+  final _repo = TronGoiRepository();
+
+  List<TronGoiModel> _hybridList = [];
+  List<TronGoiModel> _onGridList = [];
+
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
     isHybridSelected = widget.initialIsHybrid ?? true;
-
-    _fetchProducts();
+    _loadData();
   }
 
-  Future<void> _fetchProducts() async {
-    if (widget.comboProducts != null) {
-      setState(() {
-        products = widget.comboProducts!
-            .map((e) => ProductHotModel.fromJson(e))
-            .toList();
-      });
-    } else {
-      final data = await loadProducts();
-      setState(() => products = data);
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+      selectedIndex = null;
+    });
+
+    try {
+      final hybridFuture = _repo.fetchTronGoi(
+        nhomTronGoiId: widget.nhomTronGoiId,
+        loaiHeThong: 'Hy-Brid',
+      );
+
+      final onGridFuture = _repo.fetchTronGoi(
+        nhomTronGoiId: widget.nhomTronGoiId,
+        loaiHeThong: 'On-Grid',
+      );
+
+      final results = await Future.wait([hybridFuture, onGridFuture]);
+      _hybridList = results[0];
+      _onGridList = results[1];
+
+      _notifyType();
+      widget.onProductSelected?.call(null);
+    } catch (e) {
+      _error = 'Lỗi tải danh sách trọn gói';
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-    _notifyType();
-    widget.onProductSelected?.call(null);
   }
 
   void _notifyType() {
-    final type = isHybridSelected ? 'Hy-Brid' : 'On-grid';
-    final hasAny = products.any((p) => p.type == type);
+    final type = isHybridSelected ? 'Hy-Brid' : 'On-Grid';
+    final list = isHybridSelected ? _hybridList : _onGridList;
+    final hasAny = list.isNotEmpty;
     widget.onTypeSelected?.call(type, hasAny);
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredProducts = products.where((p) {
-      return isHybridSelected ? p.type == 'Hy-Brid' : p.type == 'On-grid';
-    }).toList();
+    final list = isHybridSelected ? _hybridList : _onGridList;
 
     return SafeArea(
       child: Column(
         children: [
+          // --- Header ---
+       
+
           // --- Tabs ---
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -340,7 +414,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               child: Row(
                 children: [
                   _buildTabButton('Hy-Brid', true),
-                  _buildTabButton('On-grid', false),
+                  _buildTabButton('On-Grid', false),
                 ],
               ),
             ),
@@ -350,53 +424,79 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
           // --- Product List ---
           Expanded(
-            child: filteredProducts.isEmpty
+            child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
-                          childAspectRatio: 191 / 290,
+                : _error != null
+                    ? Center(
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.red,
+                          ),
                         ),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = filteredProducts[index];
-                      final bool isSelected = selectedIndex == index;
+                      )
+                    : list.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Không có trọn gói nào',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF828282),
+                              ),
+                            ),
+                          )
+                        : GridView.builder(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2, // 2 cột
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 202 / 355,
+                            ),
+                            itemCount: list.length,
+                            itemBuilder: (context, index) {
+                              final tronGoi = list[index];
+                              final bool isSelected = selectedIndex == index;
 
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            if (selectedIndex == index) {
-                              selectedIndex = null; // bỏ chọn
-                            } else {
-                              selectedIndex = index; // chọn mới
-                            }
-                          });
-                          // báo cho màn cha biết hiện có chọn product hay không
-                          ProductHotModel? selectedProduct;
-                          if (selectedIndex != null) {
-                            selectedProduct = filteredProducts[selectedIndex!];
-                          }
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (selectedIndex == index) {
+                                      selectedIndex = null; // bỏ chọn
+                                    } else {
+                                      selectedIndex = index; // chọn mới
+                                    }
+                                  });
 
-                          widget.onProductSelected?.call(selectedProduct);
-                        },
-                        child: ProductItemCard(
-                          product: product,
-                          isSelected: isSelected,
-                        ),
-                      );
-                    },
-                  ),
+                                  TronGoiModel? selectedProduct;
+                                  if (selectedIndex != null) {
+                                    selectedProduct = list[selectedIndex!];
+                                  } else {
+                                    selectedProduct = null;
+                                  }
+
+                                  widget.onProductSelected
+                                      ?.call(selectedProduct);
+                                },
+                                child: ProductItemCard(
+                                  combo: tronGoi,
+                                  // nếu ProductItemCard chưa có isSelected,
+                                  // thêm tham số này vào widget để tô viền / đổi màu
+                                  isSelected: isSelected,
+                                ),
+                              );
+                            },
+                          ),
           ),
         ],
       ),
     );
   }
 
-  // doi tab
+  // đổi tab
   Widget _buildTabButton(String title, bool isHybrid) {
     final selected = isHybrid ? isHybridSelected : !isHybridSelected;
     return Expanded(
@@ -405,10 +505,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
           if (isHybridSelected != isHybrid) {
             setState(() {
               isHybridSelected = isHybrid;
-              selectedIndex = null; // <-- đổi loại thì bỏ chọn product cũ
+              selectedIndex = null; // đổi loại thì bỏ chọn product cũ
             });
             _notifyType();
-             widget.onProductSelected?.call(null); 
+            widget.onProductSelected?.call(null);
           }
         },
         child: Container(

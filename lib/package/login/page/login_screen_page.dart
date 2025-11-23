@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 import '../../../routes.dart';
-import '../../controllers/login/login_controller.dart'; 
+import '../../controllers/login/login_controller.dart';
 
 class LoginScreenPage extends StatefulWidget {
   const LoginScreenPage({super.key});
@@ -12,7 +12,6 @@ class LoginScreenPage extends StatefulWidget {
 }
 
 class _LoginScreenPageState extends State<LoginScreenPage> {
-
   final _formKey = GlobalKey<FormState>();
   final _userController = TextEditingController();
   final _passController = TextEditingController();
@@ -20,15 +19,12 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
 
   @override
   void dispose() {
-    
     _userController.dispose();
     _passController.dispose();
     super.dispose();
   }
 
-  //
   Future<void> _handleLogin() async {
-    // Ẩn bàn phím
     FocusScope.of(context).unfocus();
 
     if (_formKey.currentState!.validate()) {
@@ -40,23 +36,23 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
         _passController.text,
       );
 
-      
       if (!context.mounted) return;
 
-      // Widget tự xử lý điều hướng
       if (role != null) {
         switch (role) {
           case "admin":
-          case "staff":
+          case "sale":
+          case "agent":
+          case "customer":
             Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
             break;
-          case "customer":
-         
+
+          case "guest":
+          default:
             Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
             break;
         }
       }
-  
     }
   }
 
@@ -74,21 +70,53 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
       body: SafeArea(
-
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
-               
                 child: Form(
                   key: _formKey,
                   child: Stack(
                     children: [
-                    
                       SizedBox(height: figmaH * scaleH, width: screenW),
 
-                   
+                      // Nút back góc trái trên cùng
+                      Positioned(
+                        top: 16 * scaleH,
+                        left: 16 * scaleW,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacementNamed(
+                              context,
+                              AppRoutes.welcomeScreen,
+                            );
+                          },
+                          child: Container(
+                            width: 40 * scaleW,
+                            height: 40 * scaleW,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x1FD1D1D1),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.arrow_back_ios_new,
+                                size: 18,
+                                color: Color(0xFF4F4F4F),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
                       Positioned(
                         top: 105 * scaleH,
                         left: 16 * scaleW,
@@ -101,7 +129,7 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
                           ),
                         ),
                       ),
-                     
+
                       Positioned(
                         top: (135 + 310 + 24) * scaleH,
                         left: 16 * scaleW,
@@ -136,7 +164,7 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
                           ),
                         ),
                       ),
-                      // --- Frame nhập thông tin ---
+
                       Positioned(
                         top: (135 + 310 + 58 + 40) * scaleH,
                         left: 16 * scaleW,
@@ -179,7 +207,12 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
                                             'assets/icons/user.svg',
                                             width: 20,
                                             height: 20,
-                                            color: const Color.fromARGB(255, 3, 3, 3),
+                                            color: const Color.fromARGB(
+                                              255,
+                                              3,
+                                              3,
+                                              3,
+                                            ),
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(
@@ -202,8 +235,7 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
                                                   color: Color(0xFFBDBDBD),
                                                 ),
                                                 isDense: true,
-                                                contentPadding: EdgeInsets
-                                                    .zero, 
+                                                contentPadding: EdgeInsets.zero,
                                               ),
                                               validator: (value) {
                                                 if (value == null ||
@@ -229,7 +261,7 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      'Mật khẩu', 
+                                      'Mật khẩu',
                                       style: TextStyle(
                                         fontFamily: 'SF Pro',
                                         fontWeight: FontWeight.w500,
@@ -254,10 +286,15 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
                                       child: Row(
                                         children: [
                                           SvgPicture.asset(
-                                            'assets/icons/lock.svg', 
+                                            'assets/icons/lock.svg',
                                             width: 20,
                                             height: 20,
-                                            color: const Color.fromARGB(255, 3, 3, 3),
+                                            color: const Color.fromARGB(
+                                              255,
+                                              3,
+                                              3,
+                                              3,
+                                            ),
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(
@@ -308,7 +345,7 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
 
                               const SizedBox(height: 8),
 
-                              /// --- Quên mật khẩu --- 
+                              /// --- Quên mật khẩu ---
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: Text(
@@ -327,9 +364,7 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
                       ),
 
                       Positioned(
-                        top:
-                            (135 + 310 + 58 + 204 + 30) *
-                            scaleH, 
+                        top: (135 + 310 + 58 + 204 + 30) * scaleH,
                         left: 16 * scaleW,
                         right: 16 * scaleW,
                         child: Consumer<LoginController>(
@@ -351,31 +386,25 @@ class _LoginScreenPageState extends State<LoginScreenPage> {
 
                       // --- Nút Đăng nhập ---
                       Positioned(
-                        top:
-                            (135 + 310 + 58 + 204 + 60) *
-                            scaleH, 
+                        top: (135 + 310 + 58 + 204 + 60) * scaleH,
                         left: 16 * scaleW,
                         child: SizedBox(
                           width: 398 * scaleW,
                           height: 48 * scaleH,
                           child: Consumer<LoginController>(
                             builder: (context, controller, child) {
-                              // Nếu đang loading, hiển thị vòng xoay
                               if (controller.isLoading) {
-                                return Center(
+                                return const Center(
                                   child: CircularProgressIndicator(
-                                    color: const Color(0xFFED1C24),
+                                    color: Color(0xFFED1C24),
                                   ),
                                 );
                               }
 
-                              // Nếu không, hiển thị nút bấm
                               return ElevatedButton(
-                                onPressed: _handleLogin, 
+                                onPressed: _handleLogin,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(
-                                    0xFFED1C24,
-                                  ), 
+                                  backgroundColor: const Color(0xFFED1C24),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),

@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomerItemCard extends StatelessWidget {
+  final int hopDongId;
   final String name;
   final String avatar;
   final String giaTriHopDong;
   final String ngayBanGiao;
   final String hoaHong;
-  final String trangThai;
 
   const CustomerItemCard({
     super.key,
+    required this.hopDongId,
     required this.name,
     required this.avatar,
     required this.giaTriHopDong,
     required this.ngayBanGiao,
     required this.hoaHong,
-    required this.trangThai,
   });
 
   @override
@@ -106,10 +106,9 @@ class CustomerItemCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: scale(4)),
+                          // SizedBox(height: scale(4)),
 
-                          _buildStatusTag(scale, trangThai),
-
+                          // _buildStatusTag(scale, trangThai),
                           SizedBox(height: scale(6)),
                           Text(
                             name,
@@ -205,17 +204,18 @@ class CustomerItemCard extends StatelessWidget {
                   ],
                 ),
 
-          
+                /// NÚT BẤM
                 Positioned(
                   right: 0,
                   top: 0,
                   child: InkWell(
                     onTap: () {
-                      Navigator.of(
-                        context,
-                        rootNavigator: false,
-                      ).pushNamed('/warranty');
+                      Navigator.of(context).pushNamed(
+                        '/warranty',
+                        arguments: hopDongId,
+                      );
                     },
+
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       width: scale(40),
@@ -273,31 +273,31 @@ class CustomerItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusTag(Function(double) scale, String trangThai) {
-    final hetHan = trangThai.toLowerCase().contains("đã hết hạn");
+  // Widget _buildStatusTag(Function(double) scale, String trangThai) {
+  //   final hetHan = trangThai.toLowerCase().contains("đã hết hạn");
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: scale(8), vertical: scale(4)),
-      decoration: BoxDecoration(
-        color: hetHan ? const Color(0xFFFCEEE6) : const Color(0xFFEFFEF5),
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(
-          color: hetHan
-              ? const Color(0xFFF8DECD)
-              : Colors.white.withOpacity(0.7),
-          width: 1,
-        ),
-      ),
-      child: Text(
-        trangThai,
-        style: TextStyle(
-          fontFamily: 'SF Pro',
-          fontWeight: FontWeight.w400,
-          fontSize: scale(10),
-          height: 12 / 10,
-          color: hetHan ? const Color(0xFFDC5903) : const Color(0xFF0F974A),
-        ),
-      ),
-    );
-  }
+  //   return Container(
+  //     padding: EdgeInsets.symmetric(horizontal: scale(8), vertical: scale(4)),
+  //     decoration: BoxDecoration(
+  //       color: hetHan ? const Color(0xFFFCEEE6) : const Color(0xFFEFFEF5),
+  //       borderRadius: BorderRadius.circular(100),
+  //       border: Border.all(
+  //         color: hetHan
+  //             ? const Color(0xFFF8DECD)
+  //             : Colors.white.withOpacity(0.7),
+  //         width: 1,
+  //       ),
+  //     ),
+  //     child: Text(
+  //       trangThai,
+  //       style: TextStyle(
+  //         fontFamily: 'SF Pro',
+  //         fontWeight: FontWeight.w400,
+  //         fontSize: scale(10),
+  //         height: 12 / 10,
+  //         color: hetHan ? const Color(0xFFDC5903) : const Color(0xFF0F974A),
+  //       ),
+  //     ),
+  //   );
+  // }
 }

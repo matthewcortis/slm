@@ -3,9 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../page/customer_screen.dart';
+import '../repository/khach_hang_repo.dart';
 
 class BankContractCard extends StatefulWidget {
-  const BankContractCard({Key? key}) : super(key: key);
+  // DỮ LIỆU ĐỘNG TRUYỀN VÀO
+  final String bankName; // Tên ngân hàng: "Techcombank"
+  final String accountNumber; // Số tài khoản: "0123456789"
+  final String handoverDateText; // Ngày bàn giao: "12/03/2025"
+  final String totalContractValue; // Tổng giá trị hợp đồng: "12.650.000"
+  final String customerCount; // Số khách hàng: "12"
+  final String totalCommission; // Tổng hoa hồng: "100.000.000đ"
+
+  // Callback khi bấm vào "Danh sách khách hàng" (nếu muốn custom)
+  final VoidCallback? onTapCustomerList;
+
+  const BankContractCard({
+    Key? key,
+    required this.bankName,
+    required this.accountNumber,
+    required this.handoverDateText,
+    required this.totalContractValue,
+    required this.customerCount,
+    required this.totalCommission,
+    this.onTapCustomerList,
+  }) : super(key: key);
 
   @override
   State<BankContractCard> createState() => _BankContractCardState();
@@ -14,7 +35,7 @@ class BankContractCard extends StatefulWidget {
 class _BankContractCardState extends State<BankContractCard>
     with TickerProviderStateMixin {
   bool _isExpanded = false;
-
+  final repo = KhachHangRepository();
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -23,17 +44,14 @@ class _BankContractCardState extends State<BankContractCard>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        //  CARD 1 — ngân hàng, giữ chiều cao cố định
         _buildMainCard(scale),
 
-        //CARD 2 — mở rộng (tách riêng, không nằm trong card 1)
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           child: _isExpanded ? _buildExpandedCard(scale) : const SizedBox(),
         ),
 
-        // ✅ NÚT MŨI TÊN
         SizedBox(height: scale(10)),
         GestureDetector(
           onTap: () {
@@ -66,7 +84,6 @@ class _BankContractCardState extends State<BankContractCard>
     );
   }
 
-  //  CARD NGÂN HÀNG 
   Widget _buildMainCard(Function(double) scale) {
     return Center(
       child: ClipRRect(
@@ -90,32 +107,31 @@ class _BankContractCardState extends State<BankContractCard>
             ),
             child: Column(
               children: [
-             
+                // HÀNG BANK + SỐ TÀI KHOẢN
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       "Tài khoản ngân hàng",
                       style: TextStyle(
                         fontFamily: 'SF Pro',
                         fontWeight: FontWeight.w400,
                         fontSize: 14,
                         height: 20 / 14,
-                        color: const Color(0xFF848484),
+                        color: Color(0xFF848484),
                       ),
                     ),
-
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          "Techcombank",
-                          style: TextStyle(
+                          widget.bankName, // Techcombank (dynamic)
+                          style: const TextStyle(
                             fontFamily: 'SF Pro',
                             fontWeight: FontWeight.w400,
                             fontSize: 14,
                             height: 20 / 14,
-                            color: const Color(0xFF4F4F4F),
+                            color: Color(0xFF4F4F4F),
                           ),
                         ),
                         SizedBox(height: scale(4)),
@@ -123,22 +139,21 @@ class _BankContractCardState extends State<BankContractCard>
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              "0123456789",
-                              style: TextStyle(
+                              widget.accountNumber, // 0123456789 (dynamic)
+                              style: const TextStyle(
                                 fontFamily: 'SF Pro',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                                 height: 20 / 14,
-                                color: const Color(0xFF4F4F4F),
+                                color: Color(0xFF4F4F4F),
                               ),
                             ),
                             SizedBox(width: scale(6)),
                             GestureDetector(
                               onTap: () {
                                 Clipboard.setData(
-                                  const ClipboardData(text: "0123456789"),
+                                  ClipboardData(text: widget.accountNumber),
                                 );
-
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text("Đã sao chép số tài khoản"),
@@ -165,15 +180,13 @@ class _BankContractCardState extends State<BankContractCard>
 
                 SizedBox(height: scale(10)),
 
-               
+                // HÀNG NGÀY BÀN GIAO + TỔNG GIÁ TRỊ
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // TAG ngày bàn giao + label
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // TAG
                         Container(
                           width: scale(174),
                           height: scale(22),
@@ -188,50 +201,47 @@ class _BankContractCardState extends State<BankContractCard>
                           ),
                           child: Row(
                             children: [
-                              Text(
+                              const Text(
                                 "Ngày bàn giao:",
                                 style: TextStyle(
                                   fontFamily: "SF Pro",
                                   fontWeight: FontWeight.w400,
                                   fontSize: 10,
                                   height: 12 / 10,
-                                  color: const Color(0xFF4F4F4F),
+                                  color: Color(0xFF4F4F4F),
                                 ),
                               ),
                               SizedBox(width: scale(2)),
                               Text(
-                                "12/03/2025",
-                                style: TextStyle(
+                                widget.handoverDateText, // dynamic
+                                style: const TextStyle(
                                   fontFamily: "SF Pro",
                                   fontWeight: FontWeight.w600,
                                   fontSize: 10,
                                   height: 12 / 10,
-                                  color: const Color(0xFF4F4F4F),
+                                  color: Color(0xFF4F4F4F),
                                 ),
                               ),
                             ],
                           ),
                         ),
-
                         SizedBox(height: scale(4)),
-
-                        Text(
+                        const Text(
                           "Tổng giá trị hợp đồng",
                           style: TextStyle(
                             fontFamily: 'SF Pro',
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
                             height: 20 / 14,
-                            color: const Color(0xFF4F4F4F),
+                            color: Color(0xFF4F4F4F),
                           ),
                         ),
                       ],
                     ),
-
                     Row(
                       children: [
                         Text(
-                          "12.650.000",
+                          widget.totalContractValue, // "12.650.000" dynamic
                           style: TextStyle(
                             fontFamily: 'SF Pro',
                             fontWeight: FontWeight.w600,
@@ -258,7 +268,7 @@ class _BankContractCardState extends State<BankContractCard>
     );
   }
 
-  // ✅ CARD MỞ RỘNG 
+  // CARD MỞ RỘNG
   Widget _buildExpandedCard(Function(double) scale) {
     return Container(
       width: scale(398),
@@ -267,35 +277,43 @@ class _BankContractCardState extends State<BankContractCard>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-         
+          // DANH SÁCH KHÁCH HÀNG
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const CustomerListScreen(), 
-                ),
-              );
+              if (widget.onTapCustomerList != null) {
+                widget.onTapCustomerList!();
+              } else {
+                // Default: sang màn danh sách khách hàng như cũ
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CustomerListScreen(
+                      customersDisplay: repo.getCustomersOfCurrentUser(),
+                      totalCommission: widget.totalCommission,
+                      customerCount: widget.customerCount,
+                    ),
+                  ),
+                );
+              }
             },
             child: _buildSmallInfoCard(
               scale,
               title: "Danh sách khách hàng",
-              value: "12",
+              value: widget.customerCount, // dynamic
             ),
           ),
 
+          // TỔNG SỐ HOA HỒNG
           _buildSmallInfoCard(
             scale,
             title: "Tổng số hoa hồng",
-            value: "100.000.000đ",
+            value: widget.totalCommission, // dynamic
           ),
         ],
       ),
     );
   }
 
-  // ✅ CARD CON 191 × 97
   Widget _buildSmallInfoCard(
     Function(double) scale, {
     required String title,
@@ -306,20 +324,17 @@ class _BankContractCardState extends State<BankContractCard>
       height: scale(99),
       padding: EdgeInsets.all(scale(16)),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F3F3), 
+        color: const Color(0xFFF3F3F3),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE6E6E6), 
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFFE6E6E6), width: 1),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x26D1D1D1), 
+            color: Color(0x26D1D1D1),
             blurRadius: 34,
             offset: Offset(0, 15),
           ),
           BoxShadow(
-            color: Color(0x21D1D1D1), 
+            color: Color(0x21D1D1D1),
             blurRadius: 61,
             offset: Offset(0, 61),
           ),
@@ -329,7 +344,7 @@ class _BankContractCardState extends State<BankContractCard>
             offset: Offset(0, 137),
           ),
           BoxShadow(
-            color: Color(0x0DD1D1D1), 
+            color: Color(0x0DD1D1D1),
             blurRadius: 98,
             offset: Offset(0, 244),
           ),
@@ -348,17 +363,16 @@ class _BankContractCardState extends State<BankContractCard>
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'SF Pro',
-              fontWeight: FontWeight.w400, 
+              fontWeight: FontWeight.w400,
               fontSize: 14,
               height: 20 / 14,
               letterSpacing: 0,
-              color: const Color(0xFF4F4F4F),
+              color: Color(0xFF4F4F4F),
             ),
           ),
-          SizedBox(height: scale(8)), 
-
+          SizedBox(height: scale(8)),
           Text(
             value,
             textAlign: TextAlign.center,
@@ -368,7 +382,7 @@ class _BankContractCardState extends State<BankContractCard>
               fontSize: scale(22),
               height: 1.0,
               letterSpacing: 0,
-              color: const Color(0xFFEE4037), 
+              color: const Color(0xFFEE4037),
             ),
           ),
         ],

@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../widgets/quote/step_progress.dart';
 import './combo_selection_fragment.dart';
 import './equipment_selection_fragment.dart'; // chứa DanhMucScreen
-import '../../../model/ProductModel.dart';
+import '../../../combo/model/tron_goi_model.dart';
 
 class TaoBaoGiaScreen extends StatefulWidget {
   const TaoBaoGiaScreen({super.key});
@@ -14,21 +14,40 @@ class TaoBaoGiaScreen extends StatefulWidget {
 
 class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
   int _step = 1; // 1: chọn combo, 2: chọn loại (Hy-Brid/On-grid), 3: danh mục
+
   bool _hasSelection = false;
   Map<String, dynamic>? _selectedCombo;
 
   String? _selectedType; // 'Hy-Brid' | 'On-grid'
   bool _hasType = false; // có sản phẩm thuộc loại đang chọn
   bool _hasProductSelection = false;
+
+  TronGoiModel? _selectedProduct;
+
   String get _totalDisplay {
-    return _selectedProduct?.price ?? '0đ';
+    final num value = _selectedProduct?.tongGia ?? 0;
+    // đơn giản: 1.000.000 đ
+    final s = value.toStringAsFixed(0);
+    final buffer = StringBuffer();
+    int count = 0;
+    for (int i = s.length - 1; i >= 0; i--) {
+      buffer.write(s[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buffer.write('.');
+        count = 0;
+      }
+    }
+    final reversed = buffer.toString().split('').reversed.join();
+    return '$reversed đ';
   }
 
-  ProductHotModel? _selectedProduct;
   void _handleSelectionChanged(bool hasSelection, Map<String, dynamic>? combo) {
     setState(() {
       _hasSelection = hasSelection;
       _selectedCombo = combo;
+
+      // reset state step 2 & 3 khi đổi combo
       _selectedType = null;
       _hasType = false;
       _hasProductSelection = false;
@@ -41,13 +60,18 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
     setState(() {
       _selectedType = hasAny ? type : null;
       _hasType = hasAny;
+
+      // đổi type thì bỏ chọn sản phẩm cũ
+      _selectedProduct = null;
+      _hasProductSelection = false;
     });
   }
 
-  void _onProductSelected(ProductHotModel? product) {
+  // nhận từ ProductListScreen khi chọn combo cụ thể
+  void _onProductSelected(TronGoiModel? product) {
     setState(() {
       _selectedProduct = product;
-      _hasProductSelection = product != null; // true nếu đã chọn 1 product
+      _hasProductSelection = product != null;
     });
   }
 
@@ -55,26 +79,10 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
     switch (_step) {
       case 1:
         if (_hasSelection && _selectedCombo != null) {
-          final list = (_selectedCombo?['products'] as List?) ?? [];
-          if (list.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Combo chưa có sản phẩm. Vui lòng chọn combo khác.',
-                ),
-              ),
-            );
-            return;
-          }
-          final hasHybrid = list.any((e) => e['type'] == 'Hy-Brid');
-          final hasOnGrid = list.any((e) => e['type'] == 'On-grid');
-
+          // ĐÃ CHỌN NHÓM TRỌN GÓI → SANG BƯỚC 2
           setState(() {
-            _selectedType = hasHybrid
-                ? 'Hy-Brid'
-                : (hasOnGrid ? 'On-grid' : null);
-            _hasType = _selectedType != null;
             _step = 2;
+            // type sẽ được ProductListScreen báo về qua _onTypeSelected
           });
         }
         break;
@@ -84,8 +92,7 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
         }
         break;
       case 3:
-        // sang màn danh mục/thiết bị
-        _submitQuote(); // không push DanhMucScreen lần nữa
+        _submitQuote();
         break;
     }
   }
@@ -96,33 +103,30 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
     ).showSnackBar(const SnackBar(content: Text('Đã tạo báo giá')));
   }
 
- void _handleBack() {
-  if (_step > 1) {
-    setState(() {
-      if (_step == 3) {
-        // Back từ bước 3 về bước 2:
-        // - Xoá sản phẩm đã chọn
-        // - Tắt nút "Tiếp tục" ở bước 2
-        _step = 2;
-        _selectedProduct = null;
-        _hasProductSelection = false;
+  void _handleBack() {
+    if (_step > 1) {
+      setState(() {
+        if (_step == 3) {
+          // Back từ bước 3 về bước 2:
+          _step = 2;
+          _selectedProduct = null;
+          _hasProductSelection = false;
 
-        // Nếu bạn muốn reset luôn tab type thì bỏ comment 2 dòng dưới:
-        _selectedType = null;
-        _hasType = false;
-      } else {
-        // Bước 2 -> 1, giữ logic cũ
-        _step -= 1;
-      }
-    });
-  } else {
-    Navigator.of(context).maybePop();
+          // nếu muốn giữ type thì bỏ 2 dòng dưới
+          _selectedType = null;
+          _hasType = false;
+        } else {
+          // Bước 2 -> 1
+          _step -= 1;
+        }
+      });
+    } else {
+      Navigator.of(context).maybePop();
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
-    // tính CTA theo bước
     final String ctaLabel = _step == 3 ? 'Tạo báo giá' : 'Tiếp tục';
     final bool ctaEnabled = switch (_step) {
       1 => _hasSelection && _selectedCombo != null,
@@ -186,18 +190,7 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
                 ),
               ),
 
-              // CTA
-              // Container(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16),
-              //   width: double.infinity,
-              //   height: 56.h,
-              //   margin: EdgeInsets.only(top: 12.h, bottom: 12.h),
-              //   child: PrimaryButton(
-              //     label: ctaLabel, // <-- dùng label tính ở trên
-              //     enabled: ctaEnabled,
-              //     onPressed: ctaEnabled ? _goNext : null,
-              //   ),
-              // ),
+              // BOTTOM BAR (CTA)
               Padding(
                 padding: EdgeInsets.only(
                   left: 16.w,
@@ -218,7 +211,6 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
       transitionBuilder: (child, animation) {
-        // hiệu ứng thu/phóng nhẹ theo chiều ngang
         return SizeTransition(
           sizeFactor: animation,
           axis: Axis.horizontal,
@@ -226,12 +218,11 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
         );
       },
       child: _step == 3
-          ? _buildQuoteSummaryBar() // layout bước 3
-          : _buildNormalCtaBar(ctaLabel, ctaEnabled), // layout bước 1–2
+          ? _buildQuoteSummaryBar()
+          : _buildNormalCtaBar(ctaLabel, ctaEnabled),
     );
   }
 
-  // Bước 1–2: nút full width như cũ
   Widget _buildNormalCtaBar(String ctaLabel, bool ctaEnabled) {
     return Container(
       key: const ValueKey('cta-normal'),
@@ -245,7 +236,6 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
     );
   }
 
-  // Bước 3: hiển thị tổng + nút nhỏ "Tạo báo giá"
   Widget _buildQuoteSummaryBar() {
     return Container(
       key: const ValueKey('cta-summary'),
@@ -271,7 +261,7 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  _totalDisplay, 
+                  _totalDisplay,
                   style: TextStyle(
                     fontFamily: 'SFProDisplay',
                     fontWeight: FontWeight.w600,
@@ -286,14 +276,13 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
 
           SizedBox(width: 12.w),
 
-          // Nút "Tạo báo giá" nhỏ hơn, bo tròn
           SizedBox(
             width: 190.w,
             height: 56.h,
             child: PrimaryButton(
               label: 'Tạo báo giá',
-              enabled: true, // đến bước 3 thì luôn cho phép
-              onPressed: _goNext, // gọi _goNext() -> _submitQuote()
+              enabled: true,
+              onPressed: _goNext,
             ),
           ),
         ],
@@ -307,18 +296,38 @@ class _TaoBaoGiaScreenState extends State<TaoBaoGiaScreen> {
         onSelectionChanged: _handleSelectionChanged,
       );
     }
+
     if (_step == 2) {
+      final int? nhomId = _selectedCombo?['id'] as int?;
+      final String? comboName = _selectedCombo?['text'] as String?;
+
+      if (nhomId == null) {
+        return ComboSelectionFragment(
+          onSelectionChanged: _handleSelectionChanged,
+        );
+      }
+
       return ProductListScreen(
-        comboProducts: (_selectedCombo?['products'] as List?) ?? [],
-        comboName: _selectedCombo?['text'] ?? '',
+        nhomTronGoiId: nhomId,
+        comboName: comboName,
+        onBack: () {
+          setState(() {
+            _step = 1;
+          });
+        },
         onTypeSelected: _onTypeSelected,
-        initialIsHybrid: _selectedType == 'Hy-Brid',
+        initialIsHybrid: _selectedType == null
+            ? true
+            : _selectedType == 'Hy-Brid',
         onProductSelected: _onProductSelected,
       );
     }
+
     return DanhMucScreen(
       selectedType: _selectedType,
-      selectedPhase: _selectedProduct?.phase,
+      selectedPhase: _selectedProduct?.loaiHeThong,
+      tronGoi: _selectedProduct!,
+      comboId: _selectedProduct!.id,
     );
   }
 }

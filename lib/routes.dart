@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import './package/login/page/splash_screen.dart';
 import 'package/login/page/welcome_screen.dart';
-import './package/login/page/login_screen.dart';
+import 'package/login/page/resiger_screen.dart';
 import './package/login/page/login_screen_page.dart';
 import './package/bottom_nav.dart';
 import './package/home/page/home_page_screen.dart';
@@ -13,11 +13,12 @@ import 'package:provider/provider.dart';
 //
 import './package/controllers/login/login_controller.dart';
 import './package/admin/quote/page/quote_screen.dart';
+import './package/product/page/bao_gia_screen.dart';
 
 class AppRoutes {
   static final String splashScreen = '/splash-screen';
   static final String welcomeScreen = '/welcome-screen';
-  static final String loginWithRegisterScreen = '/login-with-register-screen';
+  static final String registerScreen = '/login-with-register-screen';
   static final String loginScreenPage = '/login-screen-page';
   static final String bottomNav = '/bottom-nav';
   static final String homeScreen = '/home';
@@ -28,12 +29,12 @@ class AppRoutes {
   static final String homeAdminScreen = '/admin-home';
   static final String adminBottomNav = '/admin-bottom-nav';
   static final String quoteScreen = '/quote';
-
+  static final String baoGiaScreen = '/thong-tin-bao-gia';
   static Map<String, WidgetBuilder> getRoutes() {
     return {
       splashScreen: (context) => const SplashScreen(),
       welcomeScreen: (context) => const WelcomeScreen(),
-      loginWithRegisterScreen: (context) => LoginWithRegisterScreen(),
+      registerScreen: (context) => LoginWithRegisterScreen(),
 
       loginScreenPage: (context) => ChangeNotifierProvider(
         create: (context) => LoginController(),
@@ -45,15 +46,10 @@ class AppRoutes {
       detailProductDevice: (context) => const ProductDetailScreen(),
       detailProduct: (context) => const DetailProduct(),
       warrantyDeviceScreen: (context) => const WarrantyDeviceScreen(),
-
-
+      baoGiaScreen: (context) => ThongTinBaoGiaScreen(),
 
       //admin
-      quoteScreen: (context) => const TaoBaoGiaScreen()
-
-
-
-
+      quoteScreen: (context) => const TaoBaoGiaScreen(),
     };
   }
 }

@@ -1,11 +1,20 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../model/customer_model.dart';
-import '../services/load_customer.dart';
+import '../../model/khach_hang.dart';
 import '../widgets/customer_item_card.dart';
+import '../../utils/app_utils.dart';
 
 class CustomerListScreen extends StatelessWidget {
-  const CustomerListScreen({super.key});
+  final Future<List<CustomerDisplay>> customersDisplay;
+  final String totalCommission;
+  final String customerCount;
+
+  const CustomerListScreen({
+    super.key,
+    required this.customersDisplay,
+    required this.totalCommission,
+    required this.customerCount,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +25,6 @@ class CustomerListScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF8F8F8),
       body: Stack(
         children: [
-          /// ======================= NÚT BACK =======================
           Positioned(
             top: scale(74),
             left: scale(14),
@@ -63,7 +71,6 @@ class CustomerListScreen extends StatelessWidget {
             ),
           ),
 
-          /// ======================= 2 SMALL CARD =======================
           Positioned(
             top: scale(160),
             left: scale(16),
@@ -74,25 +81,24 @@ class CustomerListScreen extends StatelessWidget {
                 _buildSmallInfoCard(
                   scale,
                   title: "Tổng hoa hồng lũy kế",
-                  value: "12.650.000",
+                  value: totalCommission,
                 ),
                 _buildSmallInfoCard(
                   scale,
                   title: "Tổng số đơn hàng",
-                  value: "12",
+                  value: customerCount,
                 ),
               ],
             ),
           ),
 
-          /// LISTVIEW KHÁCH HÀNG
           Positioned(
             top: scale(280),
             left: 0,
             right: 0,
             bottom: 0,
-            child: FutureBuilder<List<CustomerModel>>(
-              future: CustomerService.loadCustomers(),
+            child: FutureBuilder<List<CustomerDisplay>>(
+              future: customersDisplay, // <-- dùng Future mới
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -109,13 +115,15 @@ class CustomerListScreen extends StatelessWidget {
                   separatorBuilder: (_, __) => SizedBox(height: scale(12)),
                   itemBuilder: (context, i) {
                     final c = customers[i];
+
                     return CustomerItemCard(
-                      name: c.name,
-                      avatar: c.avatar,
-                      giaTriHopDong: c.giaTriHopDong,
-                      ngayBanGiao: c.ngayBanGiao,
-                      hoaHong: c.hoaHong,
-                      trangThai: c.trangThai,
+                      hopDongId: c.hopDongId,
+                      name: c.hoTenKH,
+                      avatar:
+                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTM9VGV6Xyj-5_ZyotLIuuTGTfLHe0f2w44rQ&s',
+                      giaTriHopDong: AppUtils.currency(c.tongGia),
+                      hoaHong: AppUtils.currency(c.hoaHong),
+                      ngayBanGiao: AppUtils.date(c.ngayTao.toIso8601String()),
                     );
                   },
                 );

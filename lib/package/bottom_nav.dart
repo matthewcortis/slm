@@ -9,6 +9,9 @@ import '../package/news/pages/detail_news_screen.dart';
 import '../package/device/page/detail_product_device_screen.dart';
 import '../package/product/page/detail_product_screen.dart';
 import '../package/home/page/warranty_device_screenn.dart';
+import './product/page/bao_gia_screen.dart';
+import '../package/utils/location_region_service.dart';
+
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
 
@@ -29,11 +32,21 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
   void _onTap(int index) {
     if (index == _currentIndex) {
-      // Nếu nhấn lại tab hiện tại → quay về route đầu
       _navigatorKeys[index].currentState!.popUntil((r) => r.isFirst);
     } else {
       setState(() => _currentIndex = index);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _detectRegion();
+  }
+
+  void _detectRegion() async {
+    final region = await LocationRegionService.getUserRegionVN();
+    print("Vị trí người dùng: $region");
   }
 
   @override
@@ -56,7 +69,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
             _buildNavigator(_navigatorKeys[0], const HomeScreen()),
             _buildNavigator(_navigatorKeys[1], const ComboListScreen()),
             _buildNavigator(_navigatorKeys[2], const DeviceListScreen()),
-            _buildNavigator(_navigatorKeys[3], const NewsScreen()), 
+            _buildNavigator(_navigatorKeys[3], const NewsScreen()),
             _buildNavigator(_navigatorKeys[4], const ProfileScreen()),
           ],
         ),
@@ -72,23 +85,41 @@ class _MainNavScreenState extends State<MainNavScreen> {
     return Navigator(
       key: key,
       onGenerateRoute: (settings) {
-  
         if (settings.name == '/detail-product-device') {
-          //final product = settings.arguments as ProductDeviceModel;
-          return MaterialPageRoute(builder: (_) => ProductDetailScreen());
+          return MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(),
+            settings: settings,
+          );
         }
+        if (settings.name == '/thong-tin-bao-gia') {
+          return MaterialPageRoute(
+            builder: (_) => ThongTinBaoGiaScreen(),
+            settings: settings,
+          );
+        }
+
         if (settings.name == '/detail-product') {
-          //final product = settings.arguments as ProductDeviceModel;
-          return MaterialPageRoute(builder: (_) => DetailProduct());
+          return MaterialPageRoute(
+            builder: (_) => const DetailProduct(),
+            settings: settings,
+          );
         }
-         if (settings.name == '/warranty') {
-          //final product = settings.arguments as ProductDeviceModel;
-          return MaterialPageRoute(builder: (_) => WarrantyDeviceScreen());
+
+        if (settings.name == '/warranty') {
+          return MaterialPageRoute(
+            builder: (_) => const WarrantyDeviceScreen(),
+            settings: settings,
+          );
         }
+
         if (settings.name == '/detail-news') {
-          return MaterialPageRoute(builder: (_) => const DetailNewsScreen());
+          return MaterialPageRoute(
+            builder: (_) => const DetailNewsScreen(),
+            settings: settings,
+          );
         }
-        return MaterialPageRoute(builder: (_) => child);
+
+        return MaterialPageRoute(builder: (_) => child, settings: settings);
       },
     );
   }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../model/device_model.dart';
 import '../widgets/product_device_card.dart';
 import '../model/product_device_model.dart';
-
+import '../model/category.dart';
+// fragment widget hiển thị từng danh mục thiết bị
 class DeviceWidgetSection extends StatelessWidget {
   final CategoryModel category;
   final Function(String, List<ProductDeviceModel>) onShowAll;

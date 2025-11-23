@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../model/ProductModel.dart';
-import '../services/load_product.dart';
-import '../widgets/product_card.dart';
+import '../model/tron_goi_model.dart';
+import '../repository/tron_goi_repo.dart';
+import '../../product/widgets/product_card.dart';
 
 class ProductListScreen extends StatefulWidget {
-  final List<dynamic>? comboProducts;
+  final int nhomTronGoiId; // ID nhóm trọn gói truyền từ màn trước
   final String? comboName;
   final VoidCallback? onBack;
   const ProductListScreen({
     super.key,
-    this.comboProducts,
+    required this.nhomTronGoiId,
     this.comboName,
     this.onBack,
   });
@@ -20,34 +20,32 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   bool isHybridSelected = true;
-  List<ProductHotModel> products = [];
+
+  final _repo = TronGoiRepository();
+  late Future<List<TronGoiModel>> _futureHybrid;
+  late Future<List<TronGoiModel>> _futureOnGrid;
 
   @override
   void initState() {
     super.initState();
-    _fetchProducts();
+    _loadData();
   }
 
-  Future<void> _fetchProducts() async {
-    if (widget.comboProducts != null) {
-      // ✅ Dữ liệu lấy từ combo truyền sang
-      setState(() {
-        products = widget.comboProducts!
-            .map((e) => ProductHotModel.fromJson(e))
-            .toList();
-      });
-    } else {
-      // ✅ Nếu không có comboProducts thì load toàn bộ sản phẩm từ file
-      final data = await loadProducts();
-      setState(() => products = data);
-    }
+  void _loadData() {
+    _futureHybrid = _repo.fetchTronGoi(
+      nhomTronGoiId: widget.nhomTronGoiId,
+      loaiHeThong: "Hy-Brid",
+    );
+
+    _futureOnGrid = _repo.fetchTronGoi(
+      nhomTronGoiId: widget.nhomTronGoiId,
+      loaiHeThong: "On-Grid",
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredProducts = products.where((p) {
-      return isHybridSelected ? p.type == 'Hy-Brid' : p.type == 'On-grid';
-    }).toList();
+    final future = isHybridSelected ? _futureHybrid : _futureOnGrid;
 
     return SafeArea(
       child: Column(
@@ -76,7 +74,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
                 const SizedBox(width: 16),
                 Text(
-                  widget.comboName ?? 'Danh sách sản phẩm',
+                  widget.comboName ?? 'Danh sách trọn gói',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -99,7 +97,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               child: Row(
                 children: [
                   _buildTabButton('Hy-Brid', true),
-                  _buildTabButton('On-grid', false),
+                  _buildTabButton('On-Grid', false),
                 ],
               ),
             ),
@@ -109,23 +107,50 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
           // --- Product List ---
           Expanded(
-            child: products.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // 2 cột
-                          mainAxisSpacing: 16, // khoảng cách dọc
-                          crossAxisSpacing: 16, // khoảng cách ngang
-                          childAspectRatio: 202 / 355, // đúng tỉ lệ card
-                        ),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = filteredProducts[index];
-                      return ProductItemCard(product: product);
-                    },
+            child: FutureBuilder<List<TronGoiModel>>(
+              future: future,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Lỗi tải danh sách trọn gói',
+                      style: const TextStyle(fontSize: 14, color: Colors.red),
+                    ),
+                  );
+                }
+
+                final list = snapshot.data ?? [];
+                if (list.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Không có trọn gói nào',
+                      style: TextStyle(fontSize: 14, color: Color(0xFF828282)),
+                    ),
+                  );
+                }
+
+                return GridView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // 2 cột
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio:
+                        202 / 355, // tỉ lệ giống BrandCard/ComboCard
                   ),
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    final tronGoi =
+                        list[index]; // <- kiểu TronGoiModel, nhưng đã implements TronGoiBase
+                    return ProductItemCard(combo: tronGoi);
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),

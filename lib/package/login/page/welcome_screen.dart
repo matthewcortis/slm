@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../routes.dart';
+
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -65,7 +66,7 @@ class WelcomeScreen extends StatelessWidget {
 
             /// --- Buttons ---
             Positioned(
-              bottom: scaleH(32), 
+              bottom: scaleH(32),
               left: scaleW(16),
               right: scaleW(16),
               child: Column(
@@ -74,7 +75,12 @@ class WelcomeScreen extends StatelessWidget {
                     width: double.infinity,
                     height: scaleH(48),
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.registerScreen,
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF5F5F8),
                         shape: RoundedRectangleBorder(

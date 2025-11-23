@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/product_device_model.dart';
-import '../widgets/product_device_card.dart'; // 🔁 import đúng đường dẫn tới card
+import '../widgets/product_device_card.dart';
 
 class AllProductDeviceScreen extends StatelessWidget {
   final List<ProductDeviceModel> products;

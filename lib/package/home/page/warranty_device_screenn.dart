@@ -11,7 +11,10 @@ class WarrantyDeviceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     double scale(double v) => v * width / 430;
+    final hopDongId = ModalRoute.of(context)!.settings.arguments as int;
 
+    // Debug
+    print("ID nhận tại màn warranty: $hopDongId");
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
       body: Stack(
@@ -78,7 +81,7 @@ class WarrantyDeviceScreen extends StatelessWidget {
                 "Thiết bị bảo hành",
                 style: TextStyle(
                   fontFamily: 'SFProDisplay',
-                  fontWeight: FontWeight.w600, 
+                  fontWeight: FontWeight.w600,
                   fontSize: scale(20),
                   height: 25 / 20,
                   color: const Color(0xFF4F4F4F),
@@ -95,22 +98,14 @@ class WarrantyDeviceScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: scale(16)),
                 child: Column(
                   children: [
-                     SizedBox(height: scale(20)),
-                    ContractValueCard(
-                      deliveryDate: "12/03/2025",
-                      totalValue: "12.650.000 đ",
-                      onView: () {
-                        print("Xem chi tiết hợp đồng");
-                      },
-                    ),
+                  
                     SizedBox(height: scale(20)),
-                    WarrantyWidget(),
+                    WarrantyWidget(hopDongId: hopDongId),
                     SizedBox(height: scale(20)),
                     WarrantyContractCard(),
                     SizedBox(height: scale(20)),
                     DetailInfoCard(),
                     SizedBox(height: scale(20)),
-
                   ],
                 ),
               ),

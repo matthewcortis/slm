@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../model/product_device_model.dart';
+import '../model/device_model.dart';
 import '../widgets/product_card_temp.dart';
+import '../../../routes.dart';
 class DeviceSection extends StatelessWidget {
   final List<ProductDeviceModel> deviceProducts;
   const DeviceSection({super.key, required this.deviceProducts});
@@ -12,7 +13,6 @@ class DeviceSection extends StatelessWidget {
 
     return Container(
       width: scale(398),
-      height: scale(500),
       padding: EdgeInsets.symmetric(vertical: scale(8)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,10 +58,9 @@ class DeviceSection extends StatelessWidget {
           ),
           SizedBox(height: scale(12)),
 
-          // --- Danh sách card ---
           SizedBox(
             width: scale(398),
-            height: scale(439),
+            height: scale(465),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               clipBehavior: Clip.none,
@@ -69,7 +68,19 @@ class DeviceSection extends StatelessWidget {
               separatorBuilder: (_, __) => SizedBox(width: scale(16)),
               itemBuilder: (context, index) {
                 final product = deviceProducts[index];
-                return ProductDeviceCard(product: product);
+                return ProductDeviceCard(
+                  product: product,
+
+                  onTap: () {
+                    print(product.id);
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.detailProductDevice,
+                      arguments: product.id,
+                    );
+                      
+                  },
+                );
               },
             ),
           ),

@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/combo_card.dart';
-import '../../product/page/product_list_screen.dart';
+import './tron_goi_list.dart';
+import '../model/nhom_tron_goi_model.dart';
+import '../repository/nhom_tron_goi_repo.dart';
 
 class ComboListScreen extends StatefulWidget {
   const ComboListScreen({super.key});
@@ -10,35 +12,28 @@ class ComboListScreen extends StatefulWidget {
   @override
   State<ComboListScreen> createState() => _ComboListScreenState();
 }
-class _ComboListScreenState extends State<ComboListScreen> {
-  List<dynamic> combos = [];
-  Map<String, dynamic>? selectedCombo;
 
-  Future<void> loadCombos() async {
-    final jsonString = await rootBundle.loadString('assets/data/combos.json');
-    final data = json.decode(jsonString);
-    setState(() => combos = data['combos']);
-  }
+class _ComboListScreenState extends State<ComboListScreen> {
+  late Future<List<NhomTronGoiModel>> _futureCombos;
+  final _repo = NhomTronGoiRepository();
 
   @override
   void initState() {
     super.initState();
-    loadCombos();
+    _futureCombos = _repo.getAllNhomTronGoi();
   }
 
-  bool _hasProducts(Map<String, dynamic> combo) {
-    final products = combo['products'];
-    return products is List && products.isNotEmpty;
-  }
 
-  void _handleTap(Map<String, dynamic> combo) {
-    if (_hasProducts(combo)) {
-      setState(() => selectedCombo = combo);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Combo này chưa có sản phẩm')),
-      );
-    }
+
+  void _handleTap(NhomTronGoiModel combo) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProductListScreen(
+          nhomTronGoiId: combo.id, // truyền ID nhóm trọn gói
+          comboName: combo.ten, // truyền tên để hiển thị tiêu đề
+        ),
+      ),
+    );
   }
 
   @override
@@ -46,19 +41,14 @@ class _ComboListScreenState extends State<ComboListScreen> {
     final width = MediaQuery.of(context).size.width;
     double scale(double v) => v * width / 430;
 
-    if (selectedCombo != null) {
-      return ProductListScreen(
-        comboProducts: selectedCombo!['products'],
-        comboName: selectedCombo!['text'],
-        onBack: () => setState(() => selectedCombo = null),
-      );
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8F8),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: scale(16), vertical: scale(24)),
+          padding: EdgeInsets.symmetric(
+            horizontal: scale(16),
+            vertical: scale(24),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -74,23 +64,63 @@ class _ComboListScreenState extends State<ComboListScreen> {
               ),
               SizedBox(height: scale(24)),
               Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 191 / 126,
-                  ),
-                  itemCount: combos.length,
-                  itemBuilder: (context, index) {
-                    final combo = (combos[index] as Map).cast<String, dynamic>();
-                    return GestureDetector(
-                      onTap: () => _handleTap(combo),
-                      child: BrandCard(
-                        iconPath: combo['icon'],
-                        text: combo['text'],
-                      ),
+                child: FutureBuilder<List<NhomTronGoiModel>>(
+                  future: _futureCombos,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Lỗi tải dữ liệu nhóm trọn gói',
+                          style: TextStyle(
+                            fontFamily: 'SFProDisplay',
+                            fontSize: scale(14),
+                            color: Colors.red,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final combos = snapshot.data ?? [];
+
+                    if (combos.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Không có nhóm trọn gói',
+                          style: TextStyle(
+                            fontFamily: 'SFProDisplay',
+                            fontSize: scale(14),
+                            color: const Color(0xFF828282),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 191 / 126,
+                          ),
+                      itemCount: combos.length,
+                      itemBuilder: (context, index) {
+                        final combo = combos[index];
+
+                        return GestureDetector(
+                          onTap: () => _handleTap(combo),
+                          child: BrandCard(
+                           
+                            iconPath: 'assets/icons/file-validation.svg',
+                            text: combo.ten, // lấy "ten" từ API
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

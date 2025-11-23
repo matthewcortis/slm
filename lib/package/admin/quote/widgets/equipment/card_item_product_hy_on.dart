@@ -1,26 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../model/ProductModel.dart';
+import '../../../../model/tron_goi_base.dart';
 
 class ProductItemCard extends StatelessWidget {
-  final ProductHotModel product;
+  final TronGoiInfo combo;
   final bool isSelected;
 
   const ProductItemCard({
     super.key,
-    required this.product,
+    required this.combo,
     this.isSelected = false,
   });
 
+  String _formatPrice(num value) {
+    final s = value.toStringAsFixed(0);
+    final buffer = StringBuffer();
+    int count = 0;
+    for (int i = s.length - 1; i >= 0; i--) {
+      buffer.write(s[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buffer.write('.');
+        count = 0;
+      }
+    }
+    final reversed = buffer.toString().split('').reversed.join();
+    return '$reversed đ';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final String? imageUrl = combo.duongDan;
+    final String typeText = combo.loaiHeThong;
+    final String nameText = combo.ten;
+    final String priceText = _formatPrice(combo.tongGia);
+    final String savingText =
+        'Công suất ~ ${combo.congSuatHeThong.toStringAsFixed(1)} kWp';
+
     return GestureDetector(
       child: Container(
         width: 191.w,
         height: 337.h,
         padding: EdgeInsets.all(12.w),
-
         decoration: BoxDecoration(
           color: const Color(0x33EFFEF5), // #EFFEF533
           borderRadius: BorderRadius.circular(28.r),
@@ -31,7 +53,6 @@ class ProductItemCard extends StatelessWidget {
                 : const Color(0xFFE6E6E6),
           ),
         ),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -40,14 +61,25 @@ class ProductItemCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20.r),
-                  child: Image.asset(
-                    product.image,
-                    width: 167.w,
-                    height: 167.w,
-                    fit: BoxFit.cover,
-                  ),
+                  child: imageUrl != null && imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          width: 167.w,
+                          height: 167.w,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          width: 167.w,
+                          height: 167.w,
+                          color: const Color(0xFFE0E0E0),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.image_outlined,
+                            size: 32.w,
+                            color: const Color(0xFFBDBDBD),
+                          ),
+                        ),
                 ),
-
                 Container(
                   width: 167.w,
                   height: 157.w,
@@ -63,7 +95,6 @@ class ProductItemCard extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 Positioned(
                   top: 12.h,
                   left: 12.w,
@@ -77,7 +108,9 @@ class ProductItemCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(100.r),
                     ),
                     child: Text(
-                      product.type,
+                      typeText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontFamily: 'SFProDisplay',
                         fontWeight: FontWeight.w500,
@@ -111,7 +144,7 @@ class ProductItemCard extends StatelessWidget {
                   SizedBox(width: 4.w),
                   Expanded(
                     child: Text(
-                      product.saving,
+                      savingText,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -136,7 +169,7 @@ class ProductItemCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product.name,
+                    nameText,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -147,16 +180,14 @@ class ProductItemCard extends StatelessWidget {
                       color: const Color(0xFF4F4F4F),
                     ),
                   ),
-
                   SizedBox(height: 8.h),
 
-                  // PRICE + RADIO (NGANG HÀNG)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: Text(
-                          product.price,
+                          priceText,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

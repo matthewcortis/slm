@@ -30,20 +30,19 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
 
       if (role == null) {
-        Navigator.pushReplacementNamed(context, AppRoutes.loginScreenPage);
+        Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
       } else {
         switch (role) {
           case "admin":
-            Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
-            break;
-          case "staff":
-            Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
-            break;
+          case "sale":
+          case "agent":
           case "customer":
-            Navigator.pushReplacementNamed(context,  AppRoutes.bottomNav);
+            Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
             break;
+
+          case "guest":
           default:
-            Navigator.pushReplacementNamed(context, AppRoutes.loginScreenPage);
+            Navigator.pushReplacementNamed(context, AppRoutes.bottomNav);
         }
       }
     });

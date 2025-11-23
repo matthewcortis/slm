@@ -1,12 +1,22 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-import '../../controllers/login/auth_storage.dart';
 import 'package:solarmaxapp/routes.dart';
 
 class SolarHeaderFullCard extends StatelessWidget {
-  const SolarHeaderFullCard({super.key});
+  const SolarHeaderFullCard({
+    super.key,
+    required this.userName, // Tên người dùng truyền từ ngoài
+    required this.roleTitle, // Vai trò hiển thị: "Khách hàng", "SALE", ...
+    required this.avatarImage, // Ảnh avatar: AssetImage / NetworkImage
+    this.roleCode, // Mã vai trò: "admin", "sale", "agent", "customer", "guest"
+  });
+
+  final String userName;
+  final String roleTitle;
+  final ImageProvider avatarImage;
+  final String? roleCode;
 
   static const double _baseWidth = 430.0;
 
@@ -15,12 +25,15 @@ class SolarHeaderFullCard extends StatelessWidget {
     return value * screenWidth / _baseWidth;
   }
 
+  bool get _isGuest => roleCode == null || roleCode == 'guest';
+
   Widget _buildActionByRole(
     BuildContext context,
     String? role,
     double Function(double) scale,
   ) {
     if (role == 'admin') {
+      // Admin: icon Báo giá
       return GestureDetector(
         onTap: () {
           Navigator.of(
@@ -33,9 +46,7 @@ class SolarHeaderFullCard extends StatelessWidget {
           height: scale(36),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.5),
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.5)),
           ),
           child: Center(
             child: SvgPicture.asset(
@@ -49,20 +60,15 @@ class SolarHeaderFullCard extends StatelessWidget {
       );
     }
 
+    // Các role khác: icon Notification
     return Container(
       width: scale(36),
       height: scale(36),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withOpacity(0.5),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.5)),
       ),
-      child: const Icon(
-        Icons.notifications_none,
-        size: 20,
-        color: Colors.red,
-      ),
+      child: const Icon(Icons.notifications_none, size: 20, color: Colors.red),
     );
   }
 
@@ -70,15 +76,36 @@ class SolarHeaderFullCard extends StatelessWidget {
   Widget build(BuildContext context) {
     double scale(double v) => _scale(context, v);
 
+    // KHAI BÁO style ở đây để dùng bên dưới
+    final nameTextStyle = TextStyle(
+      fontFamily: 'SF Pro',
+      fontWeight: FontWeight.w600,
+      fontStyle: FontStyle.normal,
+      fontSize: scale(16),
+      height: 20 / 16,
+      letterSpacing: 0,
+      color: const Color(0xFF4F4F4F),
+    );
+
+    final roleTextStyle = TextStyle(
+      fontFamily: 'SF Pro',
+      fontWeight: FontWeight.w400,
+      fontStyle: FontStyle.normal,
+      fontSize: scale(12),
+      height: 18 / 12,
+      letterSpacing: 0,
+      color: const Color(0xFF4F4F4F),
+    );
+
     return Container(
       width: MediaQuery.of(context).size.width,
       height: scale(430),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.only(
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
         ),
-        image: const DecorationImage(
+        image: DecorationImage(
           image: AssetImage('assets/images/banner.png'),
           fit: BoxFit.cover,
         ),
@@ -111,14 +138,14 @@ class SolarHeaderFullCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
+                          // Ảnh avatar truyền từ ngoài
                           Container(
                             width: scale(55),
                             height: scale(55),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               image: DecorationImage(
-                                image:
-                                    AssetImage('assets/images/avatar.jpg'),
+                                image: avatarImage,
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -128,41 +155,22 @@ class SolarHeaderFullCard extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Khuất Duy Quang',
-                                style: TextStyle(
-                                  fontFamily: 'SF Pro',
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: scale(16),
-                                  height: 20 / 16,
-                                  letterSpacing: 0,
-                                  color: const Color(0xFF4F4F4F),
-                                ),
-                              ),
-                              Text(
-                                'Khách hàng',
-                                style: TextStyle(
-                                  fontFamily: 'SF Pro',
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: scale(12),
-                                  height: 18 / 12,
-                                  letterSpacing: 0,
-                                  color: const Color(0xFF4F4F4F),
-                                ),
-                              ),
+                              // TÊN / WELCOME (có animation nếu guest)
+                              if (_isGuest)
+                                _AnimatedGuestName(style: nameTextStyle)
+                              else
+                                Text(userName, style: nameTextStyle),
+
+                              if (_isGuest)
+                                Text('Xin chào!', style: roleTextStyle)
+                              else
+                                Text(roleTitle, style: roleTextStyle),
                             ],
                           ),
                         ],
                       ),
-                      FutureBuilder<String?>(
-                        future: AuthStorage.getRole(),
-                        builder: (context, snapshot) {
-                          final role = snapshot.data;
-                          return _buildActionByRole(context, role, scale);
-                        },
-                      ),
+                      // Nút action theo roleCode (admin -> Báo giá, còn lại -> notification)
+                      _buildActionByRole(context, roleCode, scale),
                     ],
                   ),
                 ),
@@ -266,13 +274,21 @@ class SolarHeaderFullCard extends StatelessWidget {
                   ),
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.of(
-                        context,
-                        rootNavigator: true,
-                      ).pushNamedAndRemoveUntil(
-                        AppRoutes.welcomeScreen,
-                        (route) => false,
-                      );
+                      if (_isGuest) {
+                        // Guest: sang màn Welcome (đăng nhập)
+                        Navigator.of(
+                          context,
+                          rootNavigator: true,
+                        ).pushNamedAndRemoveUntil(
+                          AppRoutes.welcomeScreen,
+                          (route) => false,
+                        );
+                      } else {
+                        // Navigator.of(
+                        //   context,
+                        //   rootNavigator: true,
+                        // ).pushNamed(AppRoutes.detailNewsScreen);
+                      }
                     },
                     icon: const Icon(
                       Icons.arrow_forward,
@@ -280,7 +296,7 @@ class SolarHeaderFullCard extends StatelessWidget {
                       color: Colors.white,
                     ),
                     label: Text(
-                      'Tham gia ngay',
+                      _isGuest ? 'Đăng nhập' : 'Tham gia ngay',
                       style: TextStyle(
                         fontFamily: 'SFProDisplay',
                         fontWeight: FontWeight.w500,
@@ -308,5 +324,87 @@ class SolarHeaderFullCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Text cho guest: "Solar Max" -> xóa dần -> gõ "Xin chào !"
+class _AnimatedGuestName extends StatefulWidget {
+  const _AnimatedGuestName({required this.style});
+
+  final TextStyle style;
+
+  @override
+  State<_AnimatedGuestName> createState() => _AnimatedGuestNameState();
+}
+
+class _AnimatedGuestNameState extends State<_AnimatedGuestName> {
+  static const String _text1 = 'Solar Max';
+  static const String _text2 = 'Xin chào !';
+
+  String _display = _text1;
+  String _currentTarget = _text2; // sau khi xóa xong sẽ gõ text này
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Để nguyên "Solar Max" trong 1s rồi bắt đầu xóa
+    Future.delayed(const Duration(milliseconds: 1000), _startDelete);
+  }
+
+  void _startDelete() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(milliseconds: 80), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      if (_display.isNotEmpty) {
+        setState(() {
+          _display = _display.substring(0, _display.length - 1);
+        });
+      } else {
+        t.cancel();
+        _startType();
+      }
+    });
+  }
+
+  void _startType() {
+    _timer?.cancel();
+    final target = _currentTarget;
+    int index = 0;
+    _timer = Timer.periodic(const Duration(milliseconds: 90), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      if (index < target.length) {
+        setState(() {
+          _display += target[index];
+          index++;
+        });
+      } else {
+        t.cancel();
+
+        _currentTarget = (target == _text2) ? _text1 : _text2;
+
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (!mounted) return;
+          _startDelete();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(_display, style: widget.style);
   }
 }

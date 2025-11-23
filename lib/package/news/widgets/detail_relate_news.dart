@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
-import '../../product/widgets/product_card_temp.dart';
 import '../../model/product_device_model.dart';
+import '../../model/tutorial_model.dart';
+
+import '../../news/widgets/news_item_card.dart';
 
 class RelatedNewsSection extends StatelessWidget {
   final List<ProductDeviceModel> productsDevice;
 
-  const RelatedNewsSection({super.key, required this.productsDevice});
+  final Future<List<TutorialModel>> futureTutorial;
+
+  const RelatedNewsSection({
+    super.key,
+    required this.productsDevice,
+    required this.futureTutorial,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,30 +33,56 @@ class RelatedNewsSection extends StatelessWidget {
               'Tin tức liên quan',
               style: TextStyle(
                 fontFamily: 'SFProDisplay',
-                fontWeight: FontWeight.w600, // Semibold ~590
+                fontWeight: FontWeight.w600,
                 fontSize: scale(16),
                 height: 1.5,
-                color: const Color(0xFF4F4F4F), // Gray-G5
+                color: const Color(0xFF4F4F4F),
               ),
             ),
           ),
           SizedBox(height: scale(12)),
 
-          // ===== Danh sách card sản phẩm =====
+          // ===== Danh sách card tin tức =====
           SizedBox(
             width: scale(398),
-               height: scale(355),
-            child: ListView.separated(
-              clipBehavior: Clip.none,
-              scrollDirection: Axis.horizontal,
-              itemCount: productsDevice.length,
-              separatorBuilder: (_, __) => SizedBox(width: scale(17)),
-              itemBuilder: (context, index) {
-                return ProductDeviceCard(product: productsDevice[index]);
+            height: scale(355),
+            child: FutureBuilder<List<TutorialModel>>(
+              future: futureTutorial,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Lỗi tải tin: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+
+                final tutorialList = snapshot.data ?? [];
+                if (tutorialList.isEmpty) {
+                  return const Center(
+                    child: Text('Không có tin tức nào hiện tại'),
+                  );
+                }
+
+                return ListView.separated(
+                  padding: EdgeInsets.zero,
+                  primary: false,
+                  clipBehavior: Clip.hardEdge,
+                  itemCount: tutorialList.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 17),
+                  itemBuilder: (context, index) {
+                    return NewsCardCard(news: tutorialList[index]);
+                  },
+                );
               },
             ),
           ),
-          SizedBox(height: 20,)
+          SizedBox(height: 20),
         ],
       ),
     );

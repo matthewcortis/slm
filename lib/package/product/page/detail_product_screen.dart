@@ -1,56 +1,97 @@
-
 import 'package:flutter/material.dart';
 import '../widgets/top_bar_detail.dart';
 import '../widgets/device_section.dart';
 
-import '../../home/services/product_category_model.dart';
-import '../../home/services/load_product.dart'; 
 import '../../product/widgets/other_materials_section.dart';
+
+import '../repository/detail_tron_goi.dart';
+import '../model/combo_detail.dart';
+import '../../model/tron_goi.dart';
+import '../../utils/app_utils.dart';
+
 class DetailProduct extends StatelessWidget {
   const DetailProduct({super.key});
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.of(context).size.width;
+    final Object? args = ModalRoute.of(context)?.settings.arguments;
+
+    int? comboId;
+    if (args is int) {
+      comboId = args;
+    } else if (args is String) {
+      comboId = int.tryParse(args);
+    }
+
+    if (comboId == null) {
+      print('DetailProduct: KHÔNG nhận được comboId, args = $args');
+      return const Scaffold(body: Center(child: Text('Không tìm thấy combo')));
+    }
+
+    print('DetailProduct nhận comboId: $comboId');
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: FutureBuilder<ProductCategoryModel>(
-        future: loadAllProducts(), // ✅ Lấy dữ liệu từ JSON
+      body: FutureBuilder<TronGoiBase>(
+        future: TronGoiRepository().getTronGoiById(comboId),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final categoryData = snapshot.data!;
-          final deviceProducts = categoryData.deviceProducts; // ✅ Lấy danh sách thiết bị
+          if (snapshot.hasError) {
+            print('Lỗi load chi tiết combo $comboId: ${snapshot.error}');
+            return const Center(child: Text('Lỗi tải dữ liệu combo'));
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: Text('Không có dữ liệu combo'));
+          }
+
+          final tronGoi = snapshot.data!;
+          final detail = tronGoi.toDetailData();
+          final deviceProducts = tronGoi.mainDeviceProducts;
+
+     
+          String showingTime = tronGoi.showingTime ?? 'Đang cập nhật';
 
           return Stack(
             children: [
-              // --- Nội dung cuộn ---
               SingleChildScrollView(
                 child: Column(
                   children: [
-                    // --- Ảnh sản phẩm ---
                     SizedBox(
                       width: width,
                       height: 355,
-                      child: const ProductImagePreview(),
+                      child: ProductImagePreview(imageUrl: detail.imageUrl),
+                    ),
+                    ComboDetailCard(
+                      savingPerMonthText: '5.000.000 đ',
+                      title: detail.comboName,
+                      priceText: AppUtils.formatVNDNUM(detail.totalPrice),
+                      description: detail.description,
+                     
+                    ),
+                    const SizedBox(height: 10),
+                    ComboDetailInfo(
+                      congSuatPV: '${detail.congSuatTamPin} kWp',
+                      bienTan: '${detail.congSuatBienTan} kW',
+                      luuTru: '5.12 kWh',
+                      sanLuong:
+                          '${detail.sanLuongMin} - ${detail.sanLuongMax} kWh/tháng',
+                      hoanVon: showingTime,
+                      dienTich: '${detail.dienTichTamPinM2} m²',
                     ),
 
-                    // --- Các phần chi tiết ---
-                    ComboDetailCard(),
-                    const SizedBox(height: 10),
-                    ComboDetailInfo(),
                     const SizedBox(height: 10),
 
-                    // --- Danh mục thiết bị ---
                     DeviceSection(deviceProducts: deviceProducts),
 
-                      const SizedBox(height: 10),
-                      OtherMaterialsSection()
-                      
-
+                    const SizedBox(height: 10),
+                    OtherMaterialsSection(
+                      materials: tronGoi.otherVisibleVatTus,
+                    ),
                   ],
                 ),
               ),

@@ -1,25 +1,41 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import '../../../routes.dart';
+/// ==========================
+///  IMAGE PREVIEW (HEADER)
+/// ==========================
 class ProductImagePreview extends StatelessWidget {
-  const ProductImagePreview({super.key});
+  final String? imageUrl;
+
+  const ProductImagePreview({super.key, this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
+    Widget _buildImage() {
+      if (imageUrl != null && imageUrl!.isNotEmpty) {
+        // Nếu là URL tuyệt đối (http/https) thì dùng Image.network
+        if (imageUrl!.startsWith('http')) {
+          return Image.network(imageUrl!, fit: BoxFit.contain);
+        }
+        // Nếu là đường dẫn asset tương đối thì dùng Image.asset
+        return Image.asset(imageUrl!, fit: BoxFit.contain);
+      }
+
+      // Fallback ảnh default
+      return Image.asset('assets/images/product.png', fit: BoxFit.contain);
+    }
+
+    // KHÔNG dùng Scaffold ở đây, widget này dùng bên trong màn DetailProduct
+    return SizedBox(
+      width: width,
+      height: 355, // đúng với Figma section ảnh
+      child: Stack(
         children: [
           // --- Image ---
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/product.png', // đổi thành ảnh của bạn
-              fit: BoxFit.contain,
-            ),
-          ),
+          Positioned.fill(child: _buildImage()),
 
           // --- Back Glass Button ---
           Positioned(
@@ -112,8 +128,25 @@ class ProductImagePreview extends StatelessWidget {
   }
 }
 
+/// ==========================
+///  COMBO DETAIL CARD
+///  (đổ dữ liệu từ ngoài)
+/// ==========================
 class ComboDetailCard extends StatelessWidget {
-  const ComboDetailCard({super.key});
+  final String savingPerMonthText; // Ví dụ: "5.000.000 đ"
+  final String title; // Tên combo
+  final String priceText; // Ví dụ: "49.900.000 đ"
+
+  final String description; // Mô tả hệ thống
+
+  const ComboDetailCard({
+    super.key,
+    required this.savingPerMonthText,
+    required this.title,
+    required this.priceText,
+
+    required this.description,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +159,6 @@ class ComboDetailCard extends StatelessWidget {
       padding: EdgeInsets.all(scale(16)),
       decoration: BoxDecoration(
         color: Colors.white,
-      
         boxShadow: const [
           BoxShadow(
             color: Color(0x26D1D1D1),
@@ -160,10 +192,9 @@ class ComboDetailCard extends StatelessWidget {
                   BlendMode.srcIn,
                 ),
               ),
-
               SizedBox(width: scale(4)),
               Text(
-                'Tiết kiệm/ tháng: 5.000.000 đ',
+                'Tiết kiệm/ tháng: $savingPerMonthText',
                 style: TextStyle(
                   fontFamily: 'SFProDisplay',
                   fontWeight: FontWeight.w400,
@@ -176,9 +207,9 @@ class ComboDetailCard extends StatelessWidget {
           ),
           SizedBox(height: scale(8)),
 
-          // --- Tiêu đề ---
+          // --- Tên combo ---
           Text(
-            'Hệ Hybrid 5kWp 1 pha - Lưu trữ 5.12kWh Cao Cấp',
+            title,
             style: TextStyle(
               fontFamily: 'SFProDisplay',
               fontWeight: FontWeight.w600,
@@ -191,7 +222,7 @@ class ComboDetailCard extends StatelessWidget {
 
           // --- Giá ---
           Text(
-            '49.900.000 đ',
+            priceText,
             style: TextStyle(
               fontFamily: 'SFProDisplay',
               fontWeight: FontWeight.w700,
@@ -216,7 +247,7 @@ class ComboDetailCard extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                'Phù hợp cho hoá đơn tiền điện 1 - 2 triệu',
+                description,
                 style: TextStyle(
                   fontFamily: 'SFProDisplay',
                   fontWeight: FontWeight.w500,
@@ -230,16 +261,7 @@ class ComboDetailCard extends StatelessWidget {
           SizedBox(height: scale(16)),
 
           // --- Mô tả ---
-          Text(
-            'Hệ thống điện mặt trời Hybrid, có bao gồm Pin lưu trữ Lithium, nên có thể vận hành độc lập với nguồn lưới điện.',
-            style: TextStyle(
-              fontFamily: 'SFProDisplay',
-              fontWeight: FontWeight.w400,
-              fontSize: scale(14),
-              height: 20 / 14,
-              color: const Color(0xFF848484),
-            ),
-          ),
+       
           SizedBox(height: scale(24)),
 
           // --- 2 nút ---
@@ -280,29 +302,34 @@ class ComboDetailCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/icons/document-validation.svg',
-                        width: 18,
-                        height: 18,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFFEE4037),
-                          BlendMode.srcIn,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(AppRoutes.baoGiaScreen);
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icons/document-validation.svg',
+                          width: 18,
+                          height: 18,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFFEE4037),
+                            BlendMode.srcIn,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: scale(10)),
-                      Text(
-                        'Thông tin báo giá',
-                        style: TextStyle(
-                          fontFamily: 'SFProDisplay',
-                          fontWeight: FontWeight.w600,
-                          fontSize: scale(14),
-                          color: const Color(0xFFEE4037),
+                        SizedBox(width: scale(10)),
+                        Text(
+                          'Thông tin báo giá',
+                          style: TextStyle(
+                            fontFamily: 'SFProDisplay',
+                            fontWeight: FontWeight.w600,
+                            fontSize: scale(14),
+                            color: const Color(0xFFEE4037),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -362,9 +389,27 @@ class ComboDetailCard extends StatelessWidget {
   }
 }
 
-
+/// ==========================
+///  COMBO DETAIL INFO
+///  (đổ dữ liệu từ ngoài)
+/// ==========================
 class ComboDetailInfo extends StatelessWidget {
-  const ComboDetailInfo({super.key});
+  final String congSuatPV;
+  final String bienTan;
+  final String luuTru;
+  final String sanLuong;
+  final String hoanVon;
+  final String dienTich;
+
+  const ComboDetailInfo({
+    super.key,
+    required this.congSuatPV,
+    required this.bienTan,
+    required this.luuTru,
+    required this.sanLuong,
+    required this.hoanVon,
+    required this.dienTich,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -377,11 +422,22 @@ class ComboDetailInfo extends StatelessWidget {
       padding: EdgeInsets.all(scale(16)),
       decoration: BoxDecoration(
         color: Colors.white,
-        
         boxShadow: const [
-          BoxShadow(color: Color(0x26D1D1D1), blurRadius: 34, offset: Offset(0, 15)),
-          BoxShadow(color: Color(0x21D1D1D1), blurRadius: 61, offset: Offset(0, 61)),
-          BoxShadow(color: Color(0x14D1D1D1), blurRadius: 82, offset: Offset(0, 137)),
+          BoxShadow(
+            color: Color(0x26D1D1D1),
+            blurRadius: 34,
+            offset: Offset(0, 15),
+          ),
+          BoxShadow(
+            color: Color(0x21D1D1D1),
+            blurRadius: 61,
+            offset: Offset(0, 61),
+          ),
+          BoxShadow(
+            color: Color(0x14D1D1D1),
+            blurRadius: 82,
+            offset: Offset(0, 137),
+          ),
         ],
       ),
       child: Column(
@@ -405,12 +461,12 @@ class ComboDetailInfo extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildRow('Công suất PV:', '50kW'),
-                _buildRow('Biến tần solis:', '50kW'),
-                _buildRow('Lưu trữ Dyness:', '50kW'),
-                _buildRow('Sản lượng:', '350-450 kWh/tháng'),
-                _buildRow('Hoàn vốn:', '3 năm 6 tháng'),
-                _buildRow('Diện tích lắp đặt:', '21m2'),
+                _buildRow('Công suất PV:', congSuatPV),
+                _buildRow('Biến tần Solis:', bienTan),
+                _buildRow('Lưu trữ Dyness:', luuTru),
+                _buildRow('Sản lượng:', sanLuong),
+                _buildRow('Hoàn vốn:', hoanVon),
+                _buildRow('Diện tích lắp đặt:', dienTich),
               ],
             ),
           ),

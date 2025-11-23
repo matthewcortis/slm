@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../model/ProductModel.dart';
+import '../../../routes.dart';
+import '../../utils/app_utils.dart';
+import '../../model/tron_goi_base.dart';
 
-/// Card sản phẩm (hiển thị ở trang Home)
+/// Card sản phẩm (hiển thị ở trang Home) va ̣combo
 class ProductItemCard extends StatelessWidget {
-  final ProductHotModel product;
-  const ProductItemCard({super.key, required this.product});
+  final TronGoiInfo combo;
 
+  const ProductItemCard({super.key, required this.combo});
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed('/detail-product');
+        print("ID combo: ${combo.id}");
+        Navigator.of(
+          context,
+        ).pushNamed(AppRoutes.detailProduct, arguments: combo.id);
       },
       child: Container(
         width: 202.w,
-      
+
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -47,28 +52,35 @@ class ProductItemCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20.r),
-                  child: Image.asset(
-                    product.image,
-                    width: 167.w,
-                    height: 167.w,
-                    fit: BoxFit.cover,
-                  ),
+                  child: combo.duongDan != null && combo.duongDan!.isNotEmpty
+                      ? Image.network(
+                          combo.duongDan!,
+                          width: 167.w,
+                          height: 167.w,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          width: 167.w,
+                          height: 167.w,
+                          color: const Color(0xFFE6E6E6),
+                          child: const Icon(Icons.image_not_supported),
+                        ),
                 ),
-                Container(
-                  width: 167.w,
-                  height: 157.w,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20.r),
-                    gradient: const RadialGradient(
-                      center: Alignment.center,
-                      radius: 0.75,
-                      colors: [
-                        Colors.transparent,
-                        Color.fromRGBO(0, 0, 0, 0.2),
-                      ],
-                    ),
-                  ),
-                ),
+                // Container(
+                //   width: 167.w,
+                //   height: 157.w,
+                //   decoration: BoxDecoration(
+                //     borderRadius: BorderRadius.circular(20.r),
+                //     gradient: const RadialGradient(
+                //       center: Alignment.center,
+                //       radius: 0.75,
+                //       colors: [
+                //         Colors.transparent,
+                //         Color.fromRGBO(0, 0, 0, 0.2),
+                //       ],
+                //     ),
+                //   ),
+                // ),
                 Positioned(
                   top: 12.h,
                   left: 12.w,
@@ -82,7 +94,7 @@ class ProductItemCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(100.r),
                     ),
                     child: Text(
-                      product.type,
+                      combo.loaiHeThong,
                       style: TextStyle(
                         fontFamily: 'SFProDisplay',
                         fontWeight: FontWeight.w500,
@@ -104,7 +116,7 @@ class ProductItemCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product.name,
+                    combo.ten,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -117,7 +129,7 @@ class ProductItemCard extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    product.price,
+                    AppUtils.formatVND(combo.tongGia),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -149,10 +161,9 @@ class ProductItemCard extends StatelessWidget {
                         ),
                         SizedBox(width: 4.w),
 
-                        // 💡 BỌC TEXT BẰNG EXPANDED
                         Expanded(
                           child: Text(
-                            product.saving,
+                            '${(combo.congSuatHeThong / 1000).toStringAsFixed(1)} kWp',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

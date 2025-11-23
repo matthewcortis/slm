@@ -3,15 +3,18 @@ import 'package:flutter/services.dart';
 import '../equipment/card_item_option.dart';
 import '../equipment/card_item_device.dart';
 import '../bottomsheet/bottomsheet_select.dart';
+import '../../../../combo/model/tron_goi_model.dart';
 
 class DanhMucThietBiVaVatTu extends StatefulWidget {
   final String? selectedType; // 'Hy-Brid' hoặc 'On-grid'
   final String? selectedPhase; // '1', '3', ...
+  final TronGoiModel tronGoi;
 
   const DanhMucThietBiVaVatTu({
     super.key,
     this.selectedType,
     this.selectedPhase,
+    required this.tronGoi,
   });
 
   @override
@@ -21,16 +24,33 @@ class DanhMucThietBiVaVatTu extends StatefulWidget {
 class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
   // segmented choice
   bool _apMai = true;
+
+  late final List panels;
+  late final List inverters;
+  late final List batteries;
+
+  @override
+  void initState() {
+    super.initState();
+
+    panels = widget.tronGoi.panels;
+    inverters = widget.tronGoi.inverters;
+    batteries = widget.tronGoi.batteries;
+
+    print("Panels = ${panels.length}");
+    print("Inverters = ${inverters.length}");
+    print("Batteries = ${batteries.length}");
+  }
+
   List<String> get _selectedTags {
     final tags = <String>[];
 
     if (widget.selectedType != null && widget.selectedType!.isNotEmpty) {
-      tags.add(widget.selectedType!); // Hy-Brid / On-grid
+      tags.add(widget.selectedType!);
     }
 
     final phase = widget.selectedPhase;
     if (phase != null && phase.isNotEmpty) {
-      // Map phase "1" -> "Một pha", còn lại -> "Ba pha"
       final phaseLabel = phase == '1' ? 'Một pha' : 'Ba pha';
       tags.add(phaseLabel);
     }
@@ -44,39 +64,35 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
   }) {
     showSelectProductBottomSheet(
       context,
-      type: widget.selectedType, // ← nhận từ constructor
-      phase: widget.selectedPhase, // ← nhận từ constructor
-      categoryLabel: categoryLabel, // ← nhận từ OptionCard
+      type: widget.selectedType,
+      phase: widget.selectedPhase,
+      categoryLabel: categoryLabel,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xFFF8F8F8), // BG1
+      color: const Color(0xFFF8F8F8),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Tiêu đề
               Text(
                 'Danh mục thiết bị và vật tư',
                 style: const TextStyle(
                   fontFamily: 'SF Pro',
                   fontWeight: FontWeight.w600,
-                  fontStyle: FontStyle.normal,
                   fontSize: 18,
                   height: 28 / 18,
-                  letterSpacing: 0,
                   color: Color(0xFF4F4F4F),
                 ),
               ),
 
               const SizedBox(height: 12),
 
-              // Dòng "Đã chọn" + tags
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -86,8 +102,7 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
                       fontFamily: 'SF Pro',
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      height: 20 / 14,
-                      color: Color(0xFF848484), // G4
+                      color: Color(0xFF848484),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -105,26 +120,33 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
 
               const SizedBox(height: 16),
 
-              // Khối 4 lựa chọn
+              // ===================== CÁC LỰA CHỌN =====================
               Column(
                 children: [
+                  // ===================== TẤM PIN =====================
                   OptionCard(
                     title: 'Tấm quang năng',
-                    items: [
-                      SolarMaxCartCard(
-                        image: AssetImage('assets/images/product.png'),
-                        title: 'Tủ điện NLMT SolarMax',
-                        modeTag: 'Hy-Brid',
-                        congSuat: '1 pha',
-                        chiSoIp: 'IP66',
-                        khoiLuong: '24 kg',
-                        baoHanh: '05 năm',
-                        priceText: '9.999.999đ',
-                        quantity: 1,
+                    items: panels.map((item) {
+                      final vt = item.vatTu;
+                      return SolarMaxCartCard(
+                        image: const AssetImage('assets/images/product.png'),
+                        title: vt.ten,
+                        modeTag: widget.selectedType ?? '',
+                        congSuat:
+                            vt.duLieuRieng['cong_suat']?.giaTri.toString() ??
+                            '',
+                        chiSoIp: vt.duLieuRieng['ip']?.giaTri.toString() ?? '',
+                        khoiLuong:
+                            vt.duLieuRieng['khoi_luong']?.giaTri.toString() ??
+                            '',
+                        baoHanh: item.gm != null ? '${item.gm} tháng' : '',
+                        priceText: '${item.gia} đ',
+                        quantity: item.soLuong.toInt(), // <== ép int
                         onIncrease: () {},
                         onDecrease: () {},
-                      ),
-                    ],
+                        // showQuantityControl: true,            // nếu cần bật/tắt
+                      );
+                    }).toList(),
                     onChange: () {
                       _openProductBottomSheet(
                         context,
@@ -132,18 +154,82 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
                       );
                     },
                   ),
-                  SizedBox(height: 12),
-                  OptionCard(title: 'Biến tần'),
-                  SizedBox(height: 12),
-                  OptionCard(title: 'Pin lưu trữ'),
-                  SizedBox(height: 12),
+
+                  const SizedBox(height: 12),
+
+                  // ===================== BIẾN TẦN =====================
+                  OptionCard(
+                    title: 'Biến tần',
+                    items: inverters.map((item) {
+                      final vt = item.vatTu;
+                      return SolarMaxCartCard(
+                        image: const AssetImage('assets/images/product.png'),
+                        title: vt.ten,
+                        modeTag: widget.selectedType ?? '',
+                        congSuat:
+                            vt.duLieuRieng['cong_suat']?.giaTri.toString() ??
+                            '',
+                        chiSoIp: vt.duLieuRieng['ip']?.giaTri.toString() ?? '',
+                        khoiLuong:
+                            vt.duLieuRieng['khoi_luong']?.giaTri.toString() ??
+                            '',
+                        baoHanh: item.gm != null ? '${item.gm} tháng' : '',
+                        priceText: '${item.gia} đ',
+                        quantity: item.soLuong.toInt(),
+                        onIncrease: () {},
+                        onDecrease: () {},
+                      );
+                    }).toList(),
+                    onChange: () {
+                      _openProductBottomSheet(
+                        context,
+                        categoryLabel: 'Biến tần',
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // ===================== PIN LƯU TRỮ =====================
+                  OptionCard(
+                    title: 'Pin lưu trữ',
+                    items: batteries.map((item) {
+                      final vt = item.vatTu;
+                      return SolarMaxCartCard(
+                        image: const AssetImage('assets/images/product.png'),
+                        title: vt.ten,
+                        modeTag: widget.selectedType ?? '',
+                        congSuat:
+                            vt.duLieuRieng['dung_luong']?.giaTri.toString() ??
+                            '',
+                        chiSoIp: '', // nếu cần có thì lấy từ duLieuRieng
+                        khoiLuong:
+                            vt.duLieuRieng['khoi_luong']?.giaTri.toString() ??
+                            '',
+                        baoHanh: item.gm != null ? '${item.gm} tháng' : '',
+                        priceText: '${item.gia} đ',
+                        quantity: item.soLuong.toInt(),
+                        onIncrease: () {},
+                        onDecrease: () {},
+                      );
+                    }).toList(),
+                    onChange: () {
+                      _openProductBottomSheet(
+                        context,
+                        categoryLabel: 'Pin lưu trữ',
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
                   OptionCard(title: 'Hình thức lắp đặt'),
                 ],
               ),
 
               const SizedBox(height: 16),
 
-              // Áp mái / Khung sắt
+              // ===================== Segment ÁP MÁI / KHUNG SẮT =====================
               Row(
                 children: [
                   Expanded(
@@ -164,9 +250,9 @@ class _DanhMucThietBiVaVatTuState extends State<DanhMucThietBiVaVatTu> {
                 ],
               ),
               const SizedBox(height: 12),
+
               AnimatedSize(
-                alignment: Alignment.topCenter, // Mở từ trên xuống
-                clipBehavior: Clip.none,
+                alignment: Alignment.topCenter,
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
                 child: _apMai
@@ -195,10 +281,9 @@ class _TagChip extends StatelessWidget {
       height: 26,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0x33B5B5B5), // Gray G3, 20% opacity
+        color: const Color(0x33B5B5B5),
         borderRadius: BorderRadius.circular(1000),
-        border: Border.all(color: const Color(0xFFF3F3F3)), // Gray G1
-        // Hiệu ứng "glass" nhẹ
+        border: Border.all(color: const Color(0xFFF3F3F3)),
         boxShadow: [
           BoxShadow(
             color: Colors.white.withOpacity(0.3),
@@ -216,8 +301,7 @@ class _TagChip extends StatelessWidget {
             fontFamily: 'SF Pro',
             fontWeight: FontWeight.w400,
             fontSize: 12,
-            height: 18 / 12,
-            color: Color(0xFF4F4F4F), // Gray G5
+            color: Color(0xFF4F4F4F),
           ),
         ),
       ),
@@ -262,7 +346,7 @@ class _LabeledField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 76, // 20 label + 8 gap + 48 field
+      height: 76,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -271,12 +355,11 @@ class _LabeledField extends StatelessWidget {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              height: 20 / 14,
               color: Color(0xFF4F4F4F),
             ),
           ),
           const SizedBox(height: 8),
-          // field full width theo cha, vẫn giới hạn maxWidth=398 nhờ ConstrainedBox phía trên
+
           Container(
             width: double.infinity,
             height: 48,
@@ -300,42 +383,22 @@ class _LabeledField extends StatelessWidget {
                   offset: Offset(0, 137),
                   blurRadius: 82,
                 ),
-                BoxShadow(
-                  color: Color(0x0DD1D1D1),
-                  offset: Offset(0, 244),
-                  blurRadius: 98,
-                ),
-                BoxShadow(
-                  color: Color(0x00D1D1D1),
-                  offset: Offset(0, 382),
-                  blurRadius: 107,
-                ),
               ],
             ),
             child: TextFormField(
-              keyboardType: TextInputType.number, // hiển thị bàn phím số
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly, // chỉ cho nhập số
-              ],
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
-                isDense: true,
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
                 hintText: hint,
                 hintStyle: const TextStyle(
                   fontFamily: 'SF Pro',
-                  fontWeight: FontWeight.w400, // Regular
                   fontSize: 16,
-                  height: 24 / 16,
-                  letterSpacing: 0,
-                  color: Color(0xFF848484), // Gray-G4
+                  color: Color(0xFF848484),
                 ),
               ),
-              style: const TextStyle(
-                fontSize: 16,
-                height: 24 / 16,
-                color: Color(0xFF1C1C1E),
-              ),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF1C1C1E)),
             ),
           ),
         ],
